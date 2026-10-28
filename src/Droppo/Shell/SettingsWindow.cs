@@ -12,7 +12,7 @@ using Droppo.Shell.Studio;
 namespace Droppo.Shell;
 
 /// <summary>Everything you can change, in one window. Nothing is saved until you press Save.</summary>
-internal sealed class SettingsWindow : Window
+internal sealed class SettingsWindow : GlassWindow
 {
     private readonly Settings _settings;
 
@@ -45,14 +45,9 @@ internal sealed class SettingsWindow : Window
         SizeToContent = SizeToContent.Height;
         ResizeMode = ResizeMode.NoResize;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        Background = new SolidColorBrush(Brand.Cloud);
-        Foreground = Ui.Text;
-        FontFamily = Ui.Body;
         Topmost = true;
-        UseLayoutRounding = true;
-        Glass.Apply(this);
 
-        var panel = new StackPanel { Margin = new Thickness(26, 22, 26, 22) };
+        var panel = new StackPanel { Margin = new Thickness(24, 6, 24, 22) };
         panel.Children.Add(Ui.Header("Settings", $"Droppo {Tray.Version} \u00B7 {Brand.Tagline}"));
 
         // ---- wheel ----

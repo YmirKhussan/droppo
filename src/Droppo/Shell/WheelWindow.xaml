@@ -13,6 +13,13 @@
             <ScaleTransform x:Name="RootScale" ScaleX="1" ScaleY="1" />
         </Canvas.RenderTransform>
 
+        <!-- what's on screen behind the wheel, blurred (filled in when it opens) -->
+        <Canvas x:Name="BehindLayer" Width="380" Height="380" IsHitTestVisible="False">
+            <Canvas.Clip>
+                <EllipseGeometry Center="190,190" RadiusX="170" RadiusY="170" />
+            </Canvas.Clip>
+        </Canvas>
+
         <!-- frosted disc: soft shadow, milky glass, a fine dark rim for light wallpapers and a bright inner edge -->
         <Ellipse x:Name="Backdrop" Width="340" Height="340" Canvas.Left="20" Canvas.Top="20" Stroke="#261C2C49" StrokeThickness="1">
             <Ellipse.Fill>

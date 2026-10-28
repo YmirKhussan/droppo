@@ -118,7 +118,7 @@ internal sealed class PageEditor : Grid
         DockPanel.SetDock(right, Dock.Right);
         bar.Children.Add(left);
         bar.Children.Add(right);
-        var barBorder = new Border { Child = bar, BorderBrush = Ui.Line, BorderThickness = new Thickness(0, 0, 0, 1) };
+        var barBorder = new Border { Child = bar, BorderBrush = Ui.Edge, BorderThickness = new Thickness(0, 1, 0, 1) };
         SetColumnSpan(barBorder, 2);
         Children.Add(barBorder);
 
@@ -133,7 +133,7 @@ internal sealed class PageEditor : Grid
         AddTool(rail, EditTool.Sign, Ui.Glyph.Sign, "Sign", "Place your saved signature (S). Right-click to redraw it.");
         _toolButtons[EditTool.Sign].MouseRightButtonUp += (_, e) => { e.Handled = true; RedrawSignature(); };
         AddTool(rail, EditTool.Image, Ui.Glyph.Picture, "Image", "Click to place a picture or logo (I)");
-        var railBorder = new Border { Child = rail, Background = Ui.Surface, BorderBrush = Ui.Line, BorderThickness = new Thickness(0, 0, 1, 0) };
+        var railBorder = new Border { Child = rail, Background = Ui.Surface, BorderBrush = Ui.Edge, BorderThickness = new Thickness(0, 0, 1, 0) };
         SetRow(railBorder, 1);
         Children.Add(railBorder);
 

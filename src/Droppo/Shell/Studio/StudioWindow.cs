@@ -19,7 +19,7 @@ namespace Droppo.Shell.Studio;
 /// drop more files in to merge, double-click a page to edit it. Nothing touches the originals;
 /// Save writes a new file next to them.
 /// </summary>
-internal sealed class StudioWindow : Window
+internal sealed class StudioWindow : GlassWindow
 {
     private const string InternalDragFormat = "Droppo.StudioPages";
     private const string FileFilter = "PDFs, images and Office files|*.pdf;*.jpg;*.jpeg;*.png;*.webp;*.heic;*.bmp;*.gif;*.tif;*.tiff;*.doc;*.docx;*.rtf;*.odt;*.ppt;*.pptx;*.odp;*.xls;*.xlsx;*.ods|All files|*.*";
@@ -63,13 +63,8 @@ internal sealed class StudioWindow : Window
         Height = 780;
         MinWidth = 720;
         MinHeight = 480;
-        Background = new SolidColorBrush(Brand.Cloud);
-        Foreground = Ui.Text;
-        FontFamily = Ui.Body;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         AllowDrop = true;
-        UseLayoutRounding = true;
-        Glass.Apply(this);
 
         // ---- top bar ----
         var titles = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(18, 0, 12, 0) };
@@ -101,7 +96,7 @@ internal sealed class StudioWindow : Window
         DockPanel.SetDock(actions, Dock.Right);
         top.Children.Add(titles);
         top.Children.Add(actions);
-        var topBorder = new Border { Child = top, BorderBrush = Ui.Line, BorderThickness = new Thickness(0, 0, 0, 1) };
+        var topBorder = new Border { Child = top, BorderBrush = Ui.Edge, BorderThickness = new Thickness(0, 1, 0, 1) };
 
         // ---- more menu ----
         _moreMenu.Items.Add(MenuItem("Page numbers...", EditPageNumbers));
@@ -130,7 +125,7 @@ internal sealed class StudioWindow : Window
         DockPanel.SetDock(_flags, Dock.Right);
         statusBar.Children.Add(_status);
         statusBar.Children.Add(_flags);
-        var statusBorder = new Border { Child = statusBar, BorderBrush = Ui.Line, BorderThickness = new Thickness(0, 1, 0, 0) };
+        var statusBorder = new Border { Child = statusBar, BorderBrush = Ui.Edge, BorderThickness = new Thickness(0, 1, 0, 0) };
 
         // ---- page grid ----
         _gridScroll = new ScrollViewer
@@ -173,7 +168,7 @@ internal sealed class StudioWindow : Window
             Background = Ui.Shade, Visibility = Visibility.Collapsed,
             Child = new Border
             {
-                Background = Ui.Card, BorderBrush = Ui.Line, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14),
+                Background = Glass.CardBackground, BorderBrush = Glass.CardBorder, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16),
                 Padding = new Thickness(28, 18, 28, 18), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
                 Child = _busyText,
             },
@@ -310,7 +305,7 @@ internal sealed class StudioWindow : Window
             ToolTip = $"{page.SourceName}, page {page.SourceIndex + 1}",
         };
         tile.MouseEnter += (_, _) => { if (!_selected.Contains(page) && !_dragging) tile.Background = Ui.Hover; };
-        tile.MouseLeave += (_, _) => { if (!_selected.Contains(page)) tile.Background = Brushes.Transparent; };
+        tile.MouseLeave += (_, _) => { if (!_selected.Contains(page)) tile.Background = Ui.TileFill; };
         tile.MouseLeftButtonDown += (_, e) => Tile_Down(page, e);
         tile.MouseLeftButtonUp += (_, e) => Tile_Up(page);
         tile.MouseRightButtonUp += (_, e) =>
@@ -478,8 +473,8 @@ internal sealed class StudioWindow : Window
         foreach (var (page, tile) in _tiles)
         {
             bool on = _selected.Contains(page);
-            tile.BorderBrush = on ? Ui.Accent : Brushes.Transparent;
-            tile.Background = on ? Ui.AccentSoft : Brushes.Transparent;
+            tile.BorderBrush = on ? Ui.Accent : Glass.Enabled ? Ui.Edge : Brushes.Transparent;
+            tile.Background = on ? Ui.AccentSoft : Ui.TileFill;
             tile.BorderThickness = new Thickness(2);
         }
         UpdateChrome();

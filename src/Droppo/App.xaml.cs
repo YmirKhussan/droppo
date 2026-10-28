@@ -71,6 +71,24 @@ public partial class App : Application
         _qpdf = Qpdf.TryCreate(_settings.QpdfPath);
         Log.Write($"Started. ffmpeg = {_ffmpeg?.ExePath ?? "NOT FOUND"}, qpdf = {_qpdf?.ExePath ?? "NOT FOUND"}");
 
+        // Droppo.exe --previews <folder>: draws every window into PNGs and quits (used by the GitHub build to check the look)
+        int preview = Array.FindIndex(e.Args, a => string.Equals(a, "--previews", StringComparison.OrdinalIgnoreCase));
+        if (preview >= 0)
+        {
+            var folder = preview + 1 < e.Args.Length ? e.Args[preview + 1] : "previews";
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try { await Previews.RunAsync(folder, _settings, CreateContext); }
+                catch (Exception ex)
+                {
+                    Directory.CreateDirectory(folder);
+                    File.WriteAllText(Path.Combine(folder, "crash.txt"), ex.ToString());
+                }
+                finally { Shutdown(); }
+            }));
+            return;
+        }
+
         _office = new OfficeConverter(() => _settings.LibreOfficePath);
         _prompts = new AppPrompts(OpenStudio);
 

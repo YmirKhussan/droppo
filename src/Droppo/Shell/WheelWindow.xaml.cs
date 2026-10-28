@@ -75,6 +75,7 @@ public partial class WheelWindow : Window
         Reset();
         _testMode = false;
         SetHub(mark: true, title: null, sub: "move to load");
+        FrostBehind(cursor);
         Place(cursor);
         Motion.To(this, OpacityProperty, 0, 0.35, 90);
         Motion.To(RootScale, ScaleTransform.ScaleXProperty, 0.9, 1, 140);
@@ -90,10 +91,24 @@ public partial class WheelWindow : Window
         Reset();
         _testMode = true;
         SetHub(mark: false, title: "Drag a file here", sub: "click to close");
+        FrostBehind(where);
         Place(where);
         Motion.To(this, OpacityProperty, 0, 1, 120);
         Motion.To(RootScale, ScaleTransform.ScaleXProperty, 0.9, 1, 160);
         Motion.To(RootScale, ScaleTransform.ScaleYProperty, 0.9, 1, 160);
+    }
+
+    /// <summary>For the preview pictures: the wheel as it looks mid-drag, with one slice highlighted.</summary>
+    internal void ShowArmedForPreview(NativeMethods.POINT where, IReadOnlyList<string> files, IReadOnlyList<WheelAction> actions, int hover)
+    {
+        ShowForTest(where);
+        _files = files;
+        _actions = actions;
+        _armed = true;
+        BuildSlices();
+        SetHub(mark: false, title: FileKinds.Describe(files), sub: "release here to cancel");
+        Opacity = 1;
+        SetHover(hover);
     }
 
     public void HideSoon(int milliseconds)
@@ -134,6 +149,37 @@ public partial class WheelWindow : Window
     {
         HideNow();
         Aborted?.Invoke();
+    }
+
+    private Brush? _defaultFill;
+
+    /// <summary>
+    /// Real glass: grabs what's on screen where the wheel is about to appear, blurs it, and lays milky
+    /// white over it (more white on dark screens so the labels stay readable). Must run before the wheel is visible.
+    /// </summary>
+    private void FrostBehind(NativeMethods.POINT p)
+    {
+        if (IsVisible) return;
+        _defaultFill ??= Backdrop.Fill;
+        BehindLayer.Children.Clear();
+        double scale = NativeMethods.ScaleAt(p);
+        int size = (int)Math.Round(SizeDip * scale);
+        var captured = Glass.CaptureBehind(p.X - size / 2, p.Y - size / 2, size, size);
+        if (captured is not { } c)
+        {
+            Backdrop.Fill = _defaultFill; // plain frosted white
+            return;
+        }
+        var image = Glass.BlurredImage(c.Image);
+        image.Width = SizeDip;
+        image.Height = SizeDip;
+        BehindLayer.Children.Add(image);
+        double tint = Glass.TintFor(c.Brightness);
+        var fill = new LinearGradientBrush(
+            Color.FromArgb((byte)(255 * Math.Min(1, tint + 0.08)), 0xFF, 0xFF, 0xFF),
+            Color.FromArgb((byte)(255 * tint), 0xF4, 0xF6, 0xFA), new Point(0.2, 0), new Point(0.8, 1));
+        fill.Freeze();
+        Backdrop.Fill = fill;
     }
 
     /// <summary>Centres the window on a physical-pixel point, sized for that monitor's scaling.</summary>

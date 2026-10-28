@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Update="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets\backdrop.jpg" />
     <!-- control styles, loaded safely at startup by Shell\Theme.cs (not compiled as pages) -->
     <Page Remove="Theme\*.xaml" />
     <EmbeddedResource Include="Theme\*.xaml" LogicalName="Droppo.Theme.%(Filename)%(Extension)" />

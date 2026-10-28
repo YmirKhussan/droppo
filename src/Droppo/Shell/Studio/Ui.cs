@@ -16,18 +16,24 @@ namespace Droppo.Shell.Studio;
 internal static class Ui
 {
     private static readonly Brush SolidBackground = Solid(0xF4, 0xF6, 0xFA);   // Cloud White
-    private static readonly Brush GlassBackground = Solid(0x59, 0xF4, 0xF6, 0xFA);
     private static readonly Brush SolidSurface = Solid(0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassSurface = Solid(0xB8, 0xFF, 0xFF, 0xFF);
-    private static readonly Brush SolidCard = Solid(0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassCard = Solid(0xE0, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassButton = Solid(0xC7, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassTile = Solid(0x66, 0xFF, 0xFF, 0xFF);
 
-    /// <summary>Window / canvas background.</summary>
-    public static Brush Background => Glass.Enabled ? GlassBackground : SolidBackground;
+    /// <summary>Canvas areas inside a window: see-through with glass on, so the backdrop shows.</summary>
+    public static Brush Background => Glass.Enabled ? Brushes.Transparent : SolidBackground;
     /// <summary>Bars and panels.</summary>
-    public static Brush Surface => Glass.Enabled ? GlassSurface : SolidSurface;
+    public static Brush Surface => Glass.BarBackground;
     /// <summary>Cards and anything with text that must stay crisp.</summary>
-    public static Brush Card => Glass.Enabled ? GlassCard : SolidCard;
+    public static Brush Card => Glass.CardBackground;
+    /// <summary>Normal (not primary) buttons.</summary>
+    public static Brush ButtonFill => Glass.Enabled ? GlassButton : SolidSurface;
+    /// <summary>Edges of glass bars: a line of light with glass on, a hairline without.</summary>
+    public static Brush Edge => Glass.Enabled ? GlassEdge : Line;
+    private static readonly Brush GlassEdge = Solid(0xB3, 0xFF, 0xFF, 0xFF);
+
+    /// <summary>Page tiles in Studio.</summary>
+    public static Brush TileFill => Glass.Enabled ? GlassTile : Brushes.Transparent;
 
     public static readonly Brush Line = Solid(0x26, 0x1C, 0x2C, 0x49);      // navy at 15%: works on solid and glass
     public static readonly Brush Text = Solid(0x1C, 0x2C, 0x49);            // Deep Navy
@@ -81,7 +87,7 @@ internal static class Ui
             Content = content,
             Padding = new Thickness(label != null ? 14 : 9, 7, label != null ? 14 : 9, 7),
             Margin = new Thickness(3, 0, 3, 0),
-            Background = primary ? Accent : Card,
+            Background = primary ? Accent : ButtonFill,
             Foreground = primary ? Brushes.White : Text,
             BorderBrush = primary ? Accent : Line,
             FontWeight = primary ? FontWeights.SemiBold : FontWeights.Normal,
@@ -115,26 +121,43 @@ internal static class Ui
 
     public static Window Dialog(string title, Window? owner)
     {
-        var w = new Window
+        var w = new GlassWindow(card: true)
         {
             Title = title, SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize,
-            Background = SolidSurface, Foreground = Text, FontFamily = Body, ShowInTaskbar = owner == null,
+            ShowInTaskbar = owner == null,
             WindowStartupLocation = owner != null ? WindowStartupLocation.CenterOwner : WindowStartupLocation.CenterScreen,
-            UseLayoutRounding = true,
         };
         if (owner != null) w.Owner = owner;
         else w.Topmost = true; // asked from the wheel while Explorer has focus: make sure it's seen
-        Glass.Apply(w, acrylic: true);
-        w.Loaded += (_, _) => { if (w.Content is UIElement content) Motion.Rise(content, 6, 140); };
         return w;
     }
 
-    /// <summary>A rounded panel for grouping things (settings sections, previews).</summary>
-    public static Border CardPanel(UIElement child, Thickness? padding = null) => new()
+    /// <summary>A frosted glass card for grouping things (settings sections, previews).</summary>
+    public static Border CardPanel(UIElement child, Thickness? padding = null) => Glass.Card(child, padding, 14);
+
+    /// <summary>A pill you can click: quick picks like "50%" or "2 MB". <see cref="SetChip"/> marks the chosen one.</summary>
+    public static Border Chip(string label, Action onClick)
     {
-        Child = child, Background = Card, BorderBrush = Line, BorderThickness = new Thickness(1),
-        CornerRadius = new CornerRadius(10), Padding = padding ?? new Thickness(16, 14, 16, 14),
-    };
+        var text = new TextBlock { Text = label, FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = Text, HorizontalAlignment = HorizontalAlignment.Center };
+        var chip = new Border
+        {
+            Child = text, Padding = new Thickness(14, 6, 14, 7), Margin = new Thickness(0, 0, 8, 8), MinWidth = 58,
+            CornerRadius = new CornerRadius(15), BorderThickness = new Thickness(1), Cursor = Cursors.Hand,
+        };
+        SetChip(chip, false);
+        chip.MouseEnter += (_, _) => { if (!Equals(chip.Tag, true)) chip.Background = Hover; };
+        chip.MouseLeave += (_, _) => SetChip(chip, Equals(chip.Tag, true));
+        chip.MouseLeftButtonUp += (_, _) => onClick();
+        return chip;
+    }
+
+    public static void SetChip(Border chip, bool selected)
+    {
+        chip.Tag = selected;
+        chip.Background = selected ? Accent : ButtonFill;
+        chip.BorderBrush = selected ? Accent : Line;
+        if (chip.Child is TextBlock t) t.Foreground = selected ? Brushes.White : Text;
+    }
 
     /// <summary>Window header: the Droppo mark and a title.</summary>
     public static StackPanel Header(string title, string? subtitle = null)

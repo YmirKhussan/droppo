@@ -8,7 +8,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using Droppo.Core;
 using Droppo.Shell.Studio;
@@ -27,6 +26,9 @@ internal sealed class Toast : Window
     private const double CardWidth = 360;
 
     private readonly Border _card;
+    private readonly Grid _behind = new() { IsHitTestVisible = false, VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Left };
+    private const double BehindHeight = 230; // screen strip grabbed behind the card (taller than any card)
+    private static readonly Brush PlainCard = MakeCardFill(0.97, 0.93);
     private readonly Border _icon = new() { Width = 36, Height = 36, CornerRadius = new CornerRadius(18), VerticalAlignment = VerticalAlignment.Top };
     private readonly TextBlock _title = new() { FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = Ui.Text, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly TextBlock _body = new()
@@ -87,14 +89,18 @@ internal sealed class Toast : Window
         grid.Children.Add(texts);
         grid.Children.Add(close);
 
-        // frosted card: milky white, bright edge, soft navy shadow
+        // frosted card: blurred screen behind, milky white over it, a bright edge
         _card = new Border
         {
-            Child = grid, Width = CardWidth, Padding = new Thickness(16, 14, 14, 14), Margin = new Thickness(12),
-            CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1), BorderBrush = Ui.Line,
-            Background = new LinearGradientBrush(Color.FromArgb(0xF7, 0xFF, 0xFF, 0xFF), Color.FromArgb(0xEE, 0xF4, 0xF6, 0xFA), 90),
-            Effect = new DropShadowEffect { BlurRadius = 18, ShadowDepth = 4, Direction = 270, Opacity = 0.2, Color = Brand.Navy },
-            Cursor = Cursors.Hand,
+            Child = grid, Width = CardWidth, Padding = new Thickness(16, 14, 14, 14),
+            CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1),
+            BorderBrush = Glass.Enabled ? Glass.CardBorder : Ui.Line, Background = PlainCard, Cursor = Cursors.Hand,
+        };
+        _card.SizeChanged += (_, _) =>
+        {
+            _behind.Width = _card.ActualWidth;
+            _behind.Height = _card.ActualHeight;
+            _behind.Clip = new RectangleGeometry(new Rect(0, 0, _card.ActualWidth, _card.ActualHeight), 14, 14);
         };
         _card.MouseLeftButtonUp += (_, e) =>
         {
@@ -104,7 +110,16 @@ internal sealed class Toast : Window
         };
         _card.MouseEnter += (_, _) => _timer.Stop();
         _card.MouseLeave += (_, _) => { if (_title.Tag is not ToastKind.Working) _timer.Start(); };
-        Content = _card;
+        var root = new Grid { Margin = new Thickness(12) };
+        root.Children.Add(_behind);
+        root.Children.Add(_card);
+        // hairline so the card still has an edge on a white screen
+        root.Children.Add(new Border
+        {
+            CornerRadius = new CornerRadius(15), Margin = new Thickness(-1), BorderThickness = new Thickness(1), IsHitTestVisible = false,
+            BorderBrush = Brand.Brush(Color.FromArgb(0x24, 0x1C, 0x2C, 0x49)),
+        });
+        Content = root;
 
         _timer.Tick += (_, _) => Dismiss();
         SourceInitialized += (_, _) =>
@@ -162,10 +177,47 @@ internal sealed class Toast : Window
         }
 
         bool wasVisible = IsVisible;
+        if (!wasVisible) FrostBehind();
         if (!wasVisible) Show();
         Position();
         if (!wasVisible) Motion.Rise(_card, 14, 180);
         else Motion.FadeIn(_body, 120);
+    }
+
+    /// <summary>Real glass: blur what's on screen where the card will appear (before it's visible).</summary>
+    private void FrostBehind()
+    {
+        _behind.Children.Clear();
+        _card.Background = PlainCard;
+        try
+        {
+            var screen = System.Windows.Forms.Screen.PrimaryScreen;
+            var area = SystemParameters.WorkArea;
+            if (screen == null || area.Width <= 0) return;
+            double scale = screen.WorkingArea.Width / area.Width;
+            double right = area.Right - 4 - 12, bottom = area.Bottom - 4 - 12;
+            int x = (int)Math.Round((right - CardWidth) * scale), y = (int)Math.Round((bottom - BehindHeight) * scale);
+            var captured = Glass.CaptureBehind(x, y, (int)Math.Round(CardWidth * scale), (int)Math.Round(BehindHeight * scale));
+            if (captured is not { } c) return;
+            var image = Glass.BlurredImage(c.Image);
+            image.Width = CardWidth;
+            image.Height = BehindHeight;
+            image.VerticalAlignment = VerticalAlignment.Bottom;
+            _behind.Children.Add(image);
+            double tint = Glass.TintFor(c.Brightness);
+            _card.Background = MakeCardFill(Math.Min(1, tint + 0.08), tint);
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Toast glass skipped: " + ex.Message);
+        }
+    }
+
+    private static Brush MakeCardFill(double top, double bottom)
+    {
+        var b = new LinearGradientBrush(Color.FromArgb((byte)(255 * top), 0xFF, 0xFF, 0xFF), Color.FromArgb((byte)(255 * bottom), 0xF4, 0xF6, 0xFA), 90);
+        b.Freeze();
+        return b;
     }
 
     public void Dismiss()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -173,44 +174,88 @@ internal static partial class Dialogs
     public static SizeTarget? AskTargetSize(long largestBytes, int fileCount, SizeTarget last, Window? owner)
     {
         var w = Ui.Dialog("Make it smaller", owner);
-        var panel = new StackPanel { Margin = new Thickness(22), Width = 380 };
+        var panel = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 404 };
 
+        var heading = Ui.Txt("How small should it be?", 18, bold: true);
+        panel.Children.Add(heading);
         var intro = Ui.Txt(fileCount == 1
-            ? $"Original size: {Paths.HumanSize(largestBytes)}"
-            : $"{fileCount} files, the largest is {Paths.HumanSize(largestBytes)}. The target applies to each file.", 13);
+            ? $"Right now it's {Paths.HumanSize(largestBytes)}."
+            : $"{fileCount} files, the largest is {Paths.HumanSize(largestBytes)}. The target applies to each one.", 13, color: Ui.Muted);
         intro.TextWrapping = TextWrapping.Wrap;
         intro.TextTrimming = TextTrimming.None;
+        intro.Margin = new Thickness(0, 4, 0, 16);
         panel.Children.Add(intro);
 
-        var valueBox = new TextBox { Text = Paths.Num(last.Value), Width = 90, Padding = new Thickness(6), FontSize = 15, VerticalContentAlignment = VerticalAlignment.Center };
-        var percent = new RadioButton { Content = "% of original", GroupName = "unit", IsChecked = last.IsPercent, Margin = new Thickness(14, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-        var mb = new RadioButton { Content = "MB", GroupName = "unit", IsChecked = !last.IsPercent, Margin = new Thickness(14, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-        var preview = new TextBlock { Foreground = Ui.Muted, FontSize = 12, Margin = new Thickness(0, 8, 0, 0) };
-        var error = new TextBlock { Foreground = Ui.Danger, FontSize = 12, Margin = new Thickness(0, 6, 0, 0), Visibility = Visibility.Collapsed, TextWrapping = TextWrapping.Wrap };
-
-        // quick picks
-        panel.Children.Add(new TextBlock { Text = "Quick pick", Foreground = Ui.Muted, FontSize = 12, Margin = new Thickness(0, 16, 0, 6) });
-        var chips = new WrapPanel();
-        foreach (var (value, isPercent) in new[] { (25.0, true), (50.0, true), (75.0, true), (1.0, false), (2.0, false), (5.0, false), (10.0, false) })
+        bool isPercent = last.IsPercent;
+        var valueBox = new TextBox
         {
-            var label = isPercent ? $"{value:0}%" : $"{value:0} MB";
-            var chip = Ui.Btn(null, label, () =>
-            {
-                valueBox.Text = Paths.Num(value);
-                percent.IsChecked = isPercent;
-                mb.IsChecked = !isPercent;
-            });
-            chip.Margin = new Thickness(0, 0, 6, 6);
-            chips.Children.Add(chip);
-        }
-        panel.Children.Add(chips);
+            Text = Paths.Num(last.Value), Width = 104, Height = 36, FontSize = 15, Padding = new Thickness(10, 0, 10, 0),
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        var preview = Ui.Txt("", 12.5, color: Ui.Muted);
+        preview.Margin = new Thickness(0, 10, 0, 0);
+        var error = new TextBlock { Foreground = Ui.Danger, FontSize = 12.5, Margin = new Thickness(0, 6, 0, 0), Visibility = Visibility.Collapsed, TextWrapping = TextWrapping.Wrap };
 
-        // custom value
-        panel.Children.Add(new TextBlock { Text = "Or type your own", Foreground = Ui.Muted, FontSize = 12, Margin = new Thickness(0, 10, 0, 6) });
+        var quick = new List<(Border Chip, double Value, bool Percent)>();
+        Border percentChip = null!, mbChip = null!;
+
+        void SyncChips()
+        {
+            var parsed = double.TryParse(valueBox.Text.Trim().Replace(",", ".").TrimEnd('%').Trim(), System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : double.NaN;
+            foreach (var (chip, value, pct) in quick) Ui.SetChip(chip, pct == isPercent && Math.Abs(value - parsed) < 1e-9);
+            Ui.SetChip(percentChip, isPercent);
+            Ui.SetChip(mbChip, !isPercent);
+        }
+
+        // quick picks: one row for "% of the original", one for an exact size
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(96) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        void QuickRow(int row, string label, (double Value, bool Percent)[] picks)
+        {
+            var name = Ui.Txt(label, 12.5, color: Ui.Muted);
+            name.VerticalAlignment = VerticalAlignment.Top;
+            name.Margin = new Thickness(0, 7, 0, 0);
+            Grid.SetRow(name, row);
+            grid.Children.Add(name);
+            var chips = new WrapPanel();
+            foreach (var (value, pct) in picks)
+            {
+                var chip = Ui.Chip(pct ? $"{value:0}%" : $"{value:0} MB", () =>
+                {
+                    valueBox.Text = Paths.Num(value);
+                    isPercent = pct;
+                    Refresh();
+                });
+                quick.Add((chip, value, pct));
+                chips.Children.Add(chip);
+            }
+            Grid.SetRow(chips, row);
+            Grid.SetColumn(chips, 1);
+            grid.Children.Add(chips);
+        }
+        QuickRow(0, "Percentage", new[] { (25.0, true), (50.0, true), (75.0, true) });
+        QuickRow(1, "Exact size", new[] { (1.0, false), (2.0, false), (5.0, false), (10.0, false) });
+        panel.Children.Add(grid);
+
+        // your own number
+        var own = Ui.Txt("Or type your own", 12.5, color: Ui.Muted);
+        own.Margin = new Thickness(0, 10, 0, 8);
+        panel.Children.Add(own);
         var row = new StackPanel { Orientation = Orientation.Horizontal };
         row.Children.Add(valueBox);
-        row.Children.Add(percent);
-        row.Children.Add(mb);
+        percentChip = Ui.Chip("%", () => { isPercent = true; Refresh(); });
+        mbChip = Ui.Chip("MB", () => { isPercent = false; Refresh(); });
+        foreach (var unit in new[] { percentChip, mbChip })
+        {
+            unit.Margin = new Thickness(10, 0, 0, 0);
+            unit.MinWidth = 52;
+            unit.VerticalAlignment = VerticalAlignment.Center;
+            row.Children.Add(unit);
+        }
         panel.Children.Add(row);
         panel.Children.Add(preview);
         panel.Children.Add(error);
@@ -224,29 +269,27 @@ internal static partial class Dialogs
                 problem = "Type a number, like 50 or 2.5.";
                 return null;
             }
-            bool isPct = percent.IsChecked == true;
-            if (isPct && v >= 100) { problem = "Pick less than 100% (100% would be the same size)."; return null; }
-            if (!isPct && fileCount == 1 && largestBytes > 0 && v * 1024 * 1024 >= largestBytes)
+            if (isPercent && v >= 100) { problem = "Pick less than 100% (100% would be the same size)."; return null; }
+            if (!isPercent && fileCount == 1 && largestBytes > 0 && v * 1024 * 1024 >= largestBytes)
             {
-                problem = $"The file is already {Paths.HumanSize(largestBytes)}. Pick a smaller size.";
+                problem = $"It's already {Paths.HumanSize(largestBytes)}. Pick a smaller size.";
                 return null;
             }
-            return new SizeTarget(v, isPct);
+            return new SizeTarget(v, isPercent);
         }
 
         void Refresh()
         {
             error.Visibility = Visibility.Collapsed;
+            SyncChips();
             var t = Parse(out _);
-            if (t == null || largestBytes <= 0) { preview.Text = ""; return; }
+            if (t == null || largestBytes <= 0) { preview.Text = " "; return; }
             long bytes = t.BytesFor(largestBytes);
             preview.Text = t.IsPercent
-                ? $"About {Paths.HumanSize(bytes)}" + (fileCount > 1 ? " for the largest file" : "")
-                : $"About {Math.Round(100.0 * bytes / largestBytes)}% of the original" + (fileCount > 1 ? " (largest file)" : "");
+                ? $"That's about {Paths.HumanSize(bytes)}" + (fileCount > 1 ? " for the largest file." : ".")
+                : $"That's about {Math.Max(1, Math.Round(100.0 * bytes / largestBytes))}% of the original" + (fileCount > 1 ? " (largest file)." : ".");
         }
         valueBox.TextChanged += (_, _) => Refresh();
-        percent.Checked += (_, _) => Refresh();
-        mb.Checked += (_, _) => Refresh();
         Refresh();
 
         SizeTarget? result = null;
@@ -257,10 +300,14 @@ internal static partial class Dialogs
             result = t;
             w.DialogResult = true;
         }
-        var go = Ui.Btn(null, "Make smaller", Accept, primary: true);
+        var go = Ui.Btn(null, "Make it smaller", Accept, primary: true);
         var cancel = Ui.Btn(null, "Cancel", () => w.DialogResult = false);
         panel.Children.Add(Ui.ButtonRow(cancel, go));
-        w.PreviewKeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Accept(); } };
+        w.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter) { e.Handled = true; Accept(); }
+            else if (e.Key == Key.Escape) { e.Handled = true; w.DialogResult = false; }
+        };
         w.Content = panel;
         w.Loaded += (_, _) => { w.Activate(); valueBox.Focus(); valueBox.SelectAll(); };
         return w.ShowDialog() == true ? result : null;

@@ -4,24 +4,24 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using Droppo.Core;
 using Microsoft.Win32;
 
 namespace Droppo.Shell;
 
 /// <summary>
-/// Real frosted glass (Mica / Acrylic) behind windows on Windows 11. The blur is done by Windows itself,
-/// so it costs the app nothing. Falls back to plain colours on Windows 10, with "Transparency effects"
-/// off, in high contrast, or when switched off in Settings.
+/// Droppo's glass: frosted, see-through panels with bright edges over a soft cobalt backdrop.
+/// Windows get the brand backdrop; the wheel and notifications blur whatever is on your screen behind them.
+/// Everything is drawn by the app itself, so it looks the same on Windows 10 and 11.
+/// Off (Settings, Windows "Transparency effects" off, or high contrast) = plain cloud white and white cards.
 /// </summary>
 internal static class Glass
 {
-    /// <summary>Settings > Look: glass effects.</summary>
+    /// <summary>Settings > Look and feel.</summary>
     public static bool UserEnabled { get; set; } = true;
 
-    private static readonly bool Supported = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22621); // Windows 11 22H2
-
-    public static bool Enabled => UserEnabled && Supported && TransparencyOn() && !SystemParameters.HighContrast;
+    public static bool Enabled => UserEnabled && TransparencyOn() && !SystemParameters.HighContrast;
 
     private static bool TransparencyOn()
     {
@@ -36,56 +36,152 @@ internal static class Glass
         }
     }
 
-    /// <summary>
-    /// Call before the window is shown. Mica for main windows, Acrylic for small dialogs.
-    /// The window keeps its normal background if glass isn't available or fails.
-    /// </summary>
-    public static void Apply(Window window, bool acrylic = false)
+    // ---------- brushes ----------
+
+    private static readonly Brush Flat = Brand.Brush(Brand.Cloud);
+    private static ImageBrush? _backdrop;
+    private static bool _backdropTried;
+
+    /// <summary>The soft cobalt backdrop behind every Droppo window (cloud white when glass is off).</summary>
+    public static Brush WindowBackground
     {
-        if (!Enabled) return;
+        get
+        {
+            if (!Enabled) return Flat;
+            if (!_backdropTried)
+            {
+                _backdropTried = true;
+                try
+                {
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.UriSource = new Uri("pack://application:,,,/Assets/backdrop.jpg");
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.EndInit();
+                    image.Freeze();
+                    var brush = new ImageBrush(image) { Stretch = Stretch.UniformToFill };
+                    brush.Freeze();
+                    _backdrop = brush;
+                }
+                catch (Exception ex)
+                {
+                    Log.Write("Backdrop image didn't load: " + ex.Message);
+                }
+            }
+            return (Brush?)_backdrop ?? Flat;
+        }
+    }
+
+    private static readonly Brush CardFill = Gradient(0xD1, 0x99);      // frosted white, brighter top-left
+    private static readonly Brush CardEdge = Gradient(0xF2, 0x66);      // bright edge catching the light
+    private static readonly Brush BarFill = Gradient(0xA6, 0x80);
+    private static readonly Brush SolidWhite = Brand.Brush(Colors.White);
+    private static readonly Brush FlatEdge = Brand.Brush(Color.FromArgb(0x26, 0x1C, 0x2C, 0x49));
+
+    /// <summary>White going from <paramref name="topLeft"/> to <paramref name="bottomRight"/> opacity.</summary>
+    private static Brush Gradient(byte topLeft, byte bottomRight)
+    {
+        var b = new LinearGradientBrush(Color.FromArgb(topLeft, 0xFF, 0xFF, 0xFF), Color.FromArgb(bottomRight, 0xFF, 0xFF, 0xFF), new Point(0, 0), new Point(1, 1));
+        b.Freeze();
+        return b;
+    }
+
+    public static Brush CardBackground => Enabled ? CardFill : SolidWhite;
+    public static Brush CardBorder => Enabled ? CardEdge : FlatEdge;
+    public static Brush BarBackground => Enabled ? BarFill : SolidWhite;
+
+    /// <summary>A frosted glass card around <paramref name="child"/>.</summary>
+    public static System.Windows.Controls.Border Card(UIElement child, Thickness? padding = null, double radius = 16) => new()
+    {
+        Child = child, Background = CardBackground, BorderBrush = CardBorder, BorderThickness = new Thickness(1),
+        CornerRadius = new CornerRadius(radius), Padding = padding ?? new Thickness(18, 16, 18, 16), SnapsToDevicePixels = true,
+    };
+
+    // ---------- real blur of the desktop behind small windows ----------
+
+    /// <summary>
+    /// Copies the screen area (physical pixels) and shrinks it a lot: shown stretched back up, it is a soft blur
+    /// of whatever was behind. Call before the window is visible, or it captures itself. Null if it fails.
+    /// </summary>
+    public static (BitmapSource Image, double Brightness)? CaptureBehind(int x, int y, int width, int height)
+    {
+        if (!Enabled || width <= 0 || height <= 0) return null;
+        try
+        {
+            using var bitmap = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            using (var g = System.Drawing.Graphics.FromImage(bitmap))
+                g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(width, height));
+            IntPtr hbitmap = bitmap.GetHbitmap();
+            try
+            {
+                int sw = Math.Max(4, width / 10), sh = Math.Max(4, height / 10);
+                var small = Imaging.CreateBitmapSourceFromHBitmap(hbitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(sw, sh));
+                var converted = new FormatConvertedBitmap(small, PixelFormats.Bgra32, null, 0);
+                var pixels = new byte[sw * sh * 4];
+                converted.CopyPixels(pixels, sw * 4, 0);
+                double sum = 0;
+                for (int i = 0; i < pixels.Length; i += 4)
+                {
+                    sum += 0.114 * pixels[i] + 0.587 * pixels[i + 1] + 0.299 * pixels[i + 2];
+                    pixels[i + 3] = 255; // the screen is opaque
+                }
+                var frozen = BitmapSource.Create(sw, sh, 96, 96, PixelFormats.Bgra32, null, pixels, sw * 4);
+                frozen.Freeze();
+                return (frozen, sum / (sw * sh) / 255.0);
+            }
+            finally
+            {
+                DeleteObject(hbitmap);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Couldn't read the screen for the glass effect: " + ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>The captured screen, stretched smoothly so it reads as frosted glass.</summary>
+    public static System.Windows.Controls.Image BlurredImage(BitmapSource source)
+    {
+        var image = new System.Windows.Controls.Image { Source = source, Stretch = Stretch.Fill, IsHitTestVisible = false };
+        RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+        image.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 14, KernelType = System.Windows.Media.Effects.KernelType.Gaussian };
+        image.CacheMode = new BitmapCache(); // the blur is worked out once, not on every frame
+        return image;
+    }
+
+    /// <summary>How much white to lay over the blurred desktop so navy text stays readable (more on dark desktops).</summary>
+    public static double TintFor(double brightness) => brightness < 0.35 ? 0.82 : brightness < 0.6 ? 0.72 : 0.6;
+
+    // ---------- window corners ----------
+
+    /// <summary>Round corners on Windows 11 (ignored on Windows 10).</summary>
+    public static void RoundCorners(Window window)
+    {
         window.SourceInitialized += (_, _) =>
         {
             try
             {
                 var hwnd = new WindowInteropHelper(window).Handle;
-                int light = 0;
-                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref light, sizeof(int));
                 int round = DWMWCP_ROUND;
                 DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref round, sizeof(int));
-
-                var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
-                if (DwmExtendFrameIntoClientArea(hwnd, ref margins) != 0) return;
-                int backdrop = acrylic ? DWMSBT_TRANSIENTWINDOW : DWMSBT_MAINWINDOW;
-                if (DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int)) != 0) return;
-
-                if (HwndSource.FromHwnd(hwnd)?.CompositionTarget is { } target)
-                {
-                    target.BackgroundColor = Colors.Transparent;
-                    window.Background = Brushes.Transparent;
-                }
             }
             catch (Exception ex)
             {
-                Log.Write("Glass effect unavailable: " + ex.Message);
+                Log.Write("Rounded corners unavailable: " + ex.Message);
             }
         };
     }
 
-    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
     private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
-    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
     private const int DWMWCP_ROUND = 2;
-    private const int DWMSBT_MAINWINDOW = 2;      // Mica
-    private const int DWMSBT_TRANSIENTWINDOW = 3; // Acrylic
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MARGINS { public int Left, Right, Top, Bottom; }
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+    [DllImport("gdi32.dll")]
+    private static extern bool DeleteObject(IntPtr handle);
 }
 
 /// <summary>

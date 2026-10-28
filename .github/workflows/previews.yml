@@ -1,0 +1,49 @@
+# Opens every Droppo window on a real Windows machine, saves a picture of each, and puts the
+# pictures on the "previews" branch. A quick way to check the look after a change.
+name: Previews
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - ".github/workflows/previews.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  previews:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build
+        run: dotnet build src/Droppo/Droppo.csproj -c Release -o build
+
+      - name: Draw every window
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force previews | Out-Null
+          $p = Start-Process -FilePath (Resolve-Path build/Droppo.exe) -ArgumentList '--previews', "`"$PWD\previews`"" -PassThru
+          if (-not $p.WaitForExit(300000)) { $p.Kill(); "timed out" | Out-File previews/timeout.txt }
+          Get-ChildItem previews | Format-Table Name, Length
+
+      - name: Put the pictures on the previews branch
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item previews/* out -Recurse
+          "Previews for ${{ github.sha }}" | Out-File out/README.md
+          Set-Location out
+          git init -b previews
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Previews for ${{ github.sha }}"
+          git push --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" previews
