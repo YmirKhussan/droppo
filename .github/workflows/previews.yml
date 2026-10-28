@@ -26,6 +26,12 @@ jobs:
       - name: Build
         run: dotnet build src/Droppo/Droppo.csproj -c Release -o build
 
+      - name: Turn on Windows transparency effects (so glass can be checked)
+        shell: pwsh
+        run: |
+          New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize -Force | Out-Null
+          Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name EnableTransparency -Value 1 -Type DWord
+
       - name: Draw every window
         shell: pwsh
         run: |

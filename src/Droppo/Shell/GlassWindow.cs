@@ -37,6 +37,9 @@ internal class GlassWindow : Window
     private TextBlock? _maxGlyph;
 
     private readonly bool _overlay;
+    private readonly bool _glass;
+    private readonly Brush _fill;
+    private const double Radius = 12;
 
     /// <param name="card">Put the content on one frosted card (dialogs).</param>
     /// <param name="overlayCaption">No title row: the content fills the window and the window buttons float top-right
@@ -45,27 +48,33 @@ internal class GlassWindow : Window
     {
         _card = card;
         _overlay = overlayCaption;
-        // see-through: Windows blurs what's behind, we lay a light frost over it.
-        // If the blur can't be switched on, fall back to the painted sky backdrop (never a grey see-through window).
-        bool glass = Glass.Enabled;
-        Background = glass ? Glass.WindowTint : Glass.WindowBackground;
-        if (glass) _chrome.GlassFrameThickness = new Thickness(-1);
-        SourceInitialized += (_, _) =>
+        // Glass: a truly see-through window (per-pixel transparency), with Windows blurring what's behind it
+        // and a light frost painted on top. Without glass: an ordinary solid window.
+        _glass = Glass.Enabled;
+        _fill = _glass ? Glass.WindowTint : Glass.WindowBackground;
+        if (_glass)
         {
-            if (!glass) return;
-            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-            if (System.Windows.Interop.HwndSource.FromHwnd(hwnd)?.CompositionTarget is { } target) target.BackgroundColor = Colors.Transparent;
-            if (!Glass.EnableBlurBehind(hwnd))
+            WindowStyle = WindowStyle.None;
+            AllowsTransparency = true;
+            Background = Brushes.Transparent; // the rounded frame paints the frost
+            _chrome.GlassFrameThickness = new Thickness(0);
+            SourceInitialized += (_, _) =>
             {
-                Background = Glass.WindowBackground;
-                Log.Write("Window blur unavailable, using the painted backdrop.");
-            }
-        };
+                var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                if (!Glass.EnableBlurBehind(hwnd)) Log.Write("Window blur unavailable: the glass stays see-through but unblurred.");
+                UpdateRegion();
+            };
+            SizeChanged += (_, _) => UpdateRegion();
+        }
+        else
+        {
+            Background = _fill;
+            Glass.RoundCorners(this);
+        }
         Foreground = Ui.Text;
         FontFamily = Ui.Body;
         UseLayoutRounding = true;
         WindowChrome.SetWindowChrome(this, _chrome);
-        Glass.RoundCorners(this);
         _caption.Foreground = Ui.Text;
         _caption.SetBinding(TextBlock.TextProperty, new Binding(nameof(Title)) { Source = this });
         Loaded += (_, _) =>
@@ -102,7 +111,7 @@ internal class GlassWindow : Window
             Panel.SetZIndex(_buttons, 10);
             root.Children.Add(_buttons);
             _body = body;
-            return _frame = new Border { Child = root, BorderThickness = new Thickness(1), BorderBrush = Glass.Enabled ? Brand.Brush(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)) : Ui.Line };
+            return _frame = MakeFrame(root);
         }
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -129,13 +138,44 @@ internal class GlassWindow : Window
         root.Children.Add(inner);
         _body = _card ? inner : body;
 
-        _frame = new Border
-        {
-            Child = root, BorderThickness = new Thickness(1),
-            BorderBrush = Glass.Enabled ? Brand.Brush(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)) : Ui.Line,
-        };
-        return _frame;
+        return _frame = MakeFrame(root);
     }
+
+    /// <summary>The window's pane: rounded frost with a bright glass edge (or plain when glass is off).</summary>
+    private Border MakeFrame(UIElement root) => new()
+    {
+        Child = root, BorderThickness = new Thickness(1),
+        Background = _glass ? _fill : null,
+        CornerRadius = new CornerRadius(_glass ? Radius : 0),
+        BorderBrush = _glass ? Brand.Brush(Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF)) : Ui.Line,
+    };
+
+    /// <summary>Clips the window (and Windows' blur behind it) to the rounded pane.</summary>
+    private void UpdateRegion()
+    {
+        if (!_glass) return;
+        try
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (hwnd == IntPtr.Zero) return;
+            if (WindowState == WindowState.Maximized) { SetWindowRgn(hwnd, IntPtr.Zero, true); return; }
+            var source = PresentationSource.FromVisual(this);
+            double sx = source?.CompositionTarget?.TransformToDevice.M11 ?? 1, sy = source?.CompositionTarget?.TransformToDevice.M22 ?? 1;
+            int w = (int)Math.Ceiling(ActualWidth * sx), h = (int)Math.Ceiling(ActualHeight * sy), r = (int)Math.Round(Radius * 2 * sx);
+            if (w <= 0 || h <= 0) return;
+            SetWindowRgn(hwnd, CreateRoundRectRgn(0, 0, w + 1, h + 1, r, r), true); // Windows owns the region after this
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Rounded window edge skipped: " + ex.Message);
+        }
+    }
+
+    [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+    private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom, int widthEllipse, int heightEllipse);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int SetWindowRgn(IntPtr hwnd, IntPtr region, bool redraw);
 
     private void BuildButtons()
     {
@@ -159,7 +199,12 @@ internal class GlassWindow : Window
     private void UpdateState()
     {
         // a maximised window spills over the screen edge by its resize border; pull the content back in
-        if (_frame != null) _frame.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+        if (_frame != null)
+        {
+            _frame.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+            _frame.CornerRadius = new CornerRadius(_glass && WindowState != WindowState.Maximized ? Radius : 0);
+        }
+        UpdateRegion();
         if (_maxGlyph != null) _maxGlyph.Text = WindowState == WindowState.Maximized ? "" : "";
     }
 
