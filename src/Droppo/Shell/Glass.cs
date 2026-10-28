@@ -72,9 +72,12 @@ internal static class Glass
         }
     }
 
-    private static readonly Brush CardFill = Gradient(Color.FromArgb(0xF2, 0xFF, 0xFF, 0xFF), Color.FromArgb(0xE0, 0xFF, 0xFF, 0xFF));  // frosted white
-    private static readonly Brush CardEdge = Gradient(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF), Color.FromArgb(0xB3, 0xD4, 0xE3, 0xF7));  // light catching the top-left edge
-    private static readonly Brush BarFill = Gradient(Color.FromArgb(0xA6, 0xFF, 0xFF, 0xFF), Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
+    // see-through panes: the blurred desktop shows through, a bright edge catches the light
+    private static readonly Brush CardFill = Gradient(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF), Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF));
+    private static readonly Brush CardEdge = Gradient(Color.FromArgb(0xF2, 0xFF, 0xFF, 0xFF), Color.FromArgb(0x73, 0xFF, 0xFF, 0xFF));
+    private static readonly Brush BarFill = Gradient(Color.FromArgb(0x47, 0xFF, 0xFF, 0xFF), Color.FromArgb(0x2E, 0xFF, 0xFF, 0xFF));
+    // the window's own frost over the blurred desktop: enough white that navy text always reads
+    private static readonly Brush Tint = Gradient(Color.FromArgb(0xA6, 0xF8, 0xFB, 0xFF), Color.FromArgb(0x8C, 0xE8, 0xF1, 0xFF));
     private static readonly Brush SolidWhite = Brand.Brush(Colors.White);
     private static readonly Brush FlatEdge = Brand.Brush(Color.FromArgb(0x24, 0x0F, 0x2D, 0x5B));
 
@@ -86,15 +89,18 @@ internal static class Glass
     }
 
     public static Brush CardBackground => Enabled ? CardFill : SolidWhite;
+
+    /// <summary>The see-through frost laid over the blurred desktop behind a window.</summary>
+    public static Brush WindowTint => Enabled ? Tint : Flat;
     public static Brush CardBorder => Enabled ? CardEdge : FlatEdge;
     public static Brush BarBackground => Enabled ? BarFill : SolidWhite;
 
     /// <summary>A frosted glass card around <paramref name="child"/>, lifted off the page by a soft shadow.</summary>
-    public static System.Windows.Controls.Border Card(UIElement child, Thickness? padding = null, double radius = 14, bool shadow = true) => new()
+    public static System.Windows.Controls.Border Card(UIElement child, Thickness? padding = null, double radius = 14, bool shadow = false) => new()
     {
         Child = child, Background = CardBackground, BorderBrush = CardBorder, BorderThickness = new Thickness(1),
         CornerRadius = new CornerRadius(radius), Padding = padding ?? new Thickness(18, 16, 18, 16), SnapsToDevicePixels = true,
-        Effect = shadow ? SoftShadow() : null,
+        Effect = shadow || !Enabled ? SoftShadow() : null, // see-through glass casts no muddy shadow
     };
 
     /// <summary>The board's soft, wide, barely-there shadow.</summary>
@@ -159,6 +165,49 @@ internal static class Glass
 
     /// <summary>How much white to lay over the blurred desktop so navy text stays readable (more on dark desktops).</summary>
     public static double TintFor(double brightness) => brightness < 0.3 ? 0.8 : brightness < 0.55 ? 0.72 : 0.64;
+
+    // ---------- real glass: Windows blurs what's behind the window ----------
+
+    /// <summary>
+    /// Asks Windows to blur whatever is behind this window (the same effect as the Start menu on Windows 10).
+    /// The window's own background then only needs to be a light, see-through tint. False if unavailable.
+    /// </summary>
+    public static bool EnableBlurBehind(IntPtr hwnd)
+    {
+        try
+        {
+            var accent = new AccentPolicy { AccentState = ACCENT_ENABLE_BLURBEHIND };
+            int size = Marshal.SizeOf(accent);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(accent, ptr, false);
+                var data = new WindowCompositionAttributeData { Attribute = WCA_ACCENT_POLICY, Data = ptr, SizeOfData = size };
+                return SetWindowCompositionAttribute(hwnd, ref data) != 0;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Blur behind unavailable: " + ex.Message);
+            return false;
+        }
+    }
+
+    private const int WCA_ACCENT_POLICY = 19;
+    private const int ACCENT_ENABLE_BLURBEHIND = 3;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AccentPolicy { public int AccentState, AccentFlags, GradientColor, AnimationId; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowCompositionAttributeData { public int Attribute; public IntPtr Data; public int SizeOfData; }
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
     // ---------- window corners ----------
 

@@ -17,8 +17,8 @@ internal static class Ui
 {
     private static readonly Brush SolidBackground = Solid(0xF4, 0xF7, 0xFC);   // Cloud
     private static readonly Brush SolidSurface = Solid(0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassButton = Solid(0xF2, 0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassTile = Solid(0xCC, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassButton = Solid(0xBF, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassTile = Solid(0x73, 0xFF, 0xFF, 0xFF);
 
     /// <summary>Canvas areas inside a window: see-through with glass on, so the backdrop shows.</summary>
     public static Brush Background => Glass.Enabled ? Brushes.Transparent : SolidBackground;

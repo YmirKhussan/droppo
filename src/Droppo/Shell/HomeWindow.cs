@@ -213,9 +213,21 @@ internal sealed class HomeWindow : GlassWindow
         {
             RenderActions(_files);
         }
+        else if (_page == Page.Home)
+        {
+            _content.Children.Add(DropZone("Drop it here.", 290, big: true));
+            Label("Or start with a tool");
+            var pills = new WrapPanel();
+            foreach (var p in Pages.Where(p => p.Page != Page.Home))
+                pills.Children.Add(Pill(p.Glyph, p.Label, () => Show(p.Page)));
+            pills.Children.Add(Pill("\uE70F", "PDF Studio", () => StudioRequested?.Invoke()));
+            _content.Children.Add(pills);
+            _content.Children.Add(Tip());
+        }
         else
         {
-            Header(_page == Page.Home ? "Welcome to Droppo" : info.Label, info.Lead);
+            Header(info.Label, info.Lead);
+            _content.Children.Add(DropZone($"Drop files to {info.Label.ToLowerInvariant()}", 190, big: false));
             if (_page == Page.Pdf)
             {
                 var studio = Ui.Btn(Ui.Glyph.Edit, "Open PDF Studio", () => StudioRequested?.Invoke(), primary: true);
@@ -223,10 +235,7 @@ internal sealed class HomeWindow : GlassWindow
                 studio.Margin = new Thickness(0, 0, 0, 18);
                 _content.Children.Add(studio);
             }
-            _content.Children.Add(DropZone(_page == Page.Home ? "Drop your files here" : $"Drop files to {info.Label.ToLowerInvariant()}"));
-            if (_page == Page.Home) RenderToolCards();
-            else RenderCatalog(_page);
-            _content.Children.Add(Tip());
+            RenderCatalog(_page);
         }
         Motion.Rise(_content, 6, 140);
         _scroll.ScrollToVerticalOffset(0);
@@ -234,8 +243,8 @@ internal sealed class HomeWindow : GlassWindow
 
     private void Header(string title, string lead)
     {
-        var t = Ui.Txt(title, 24, bold: true);
-        t.Margin = new Thickness(0, 0, 0, 4);
+        var t = Ui.Txt(title, 26, bold: true);
+        t.Margin = new Thickness(0, 4, 0, 4);
         _content.Children.Add(t);
         var l = Ui.Txt(lead, 13.5, color: Ui.Muted);
         l.TextWrapping = TextWrapping.Wrap;
@@ -244,35 +253,45 @@ internal sealed class HomeWindow : GlassWindow
         _content.Children.Add(l);
     }
 
-    private Border DropZone(string headline)
+    private void Label(string text)
+    {
+        var l = Ui.Txt(text, 12.5, bold: true, color: Ui.Muted);
+        l.Margin = new Thickness(4, 0, 0, 10);
+        _content.Children.Add(l);
+    }
+
+    private static readonly Brush DashRest = Brand.Brush(Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF));
+
+    /// <summary>A pane of glass you drop files on (or click to browse).</summary>
+    private Border DropZone(string headline, double height, bool big)
     {
         var icon = new Border
         {
-            Width = 60, Height = 60, CornerRadius = new CornerRadius(18), Background = Ui.AccentSoft,
-            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(28, Ui.Accent),
+            Width = big ? 64 : 52, Height = big ? 64 : 52, CornerRadius = new CornerRadius(big ? 18 : 15), Background = Brand.TileFill,
+            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(big ? 30 : 24, Brushes.White),
         };
         var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         stack.Children.Add(icon);
-        var line = Ui.Txt(headline, 17, bold: true);
+        var line = Ui.Txt(headline, big ? 30 : 18, bold: true);
         line.HorizontalAlignment = HorizontalAlignment.Center;
-        line.Margin = new Thickness(0, 14, 0, 3);
+        line.Margin = new Thickness(0, big ? 18 : 12, 0, 4);
         stack.Children.Add(line);
-        var sub = new TextBlock { FontSize = 13, Foreground = Ui.Muted, HorizontalAlignment = HorizontalAlignment.Center };
+        var sub = new TextBlock { FontSize = 13.5, Foreground = Ui.Muted, HorizontalAlignment = HorizontalAlignment.Center };
         sub.Inlines.Add(new System.Windows.Documents.Run("or "));
-        sub.Inlines.Add(new System.Windows.Documents.Run("click to browse") { Foreground = Ui.Accent, FontWeight = FontWeights.SemiBold });
+        sub.Inlines.Add(new System.Windows.Documents.Run("browse your files") { Foreground = Ui.Accent, FontWeight = FontWeights.SemiBold });
         stack.Children.Add(sub);
 
         _dropOutline = new System.Windows.Shapes.Rectangle
         {
-            RadiusX = 12, RadiusY = 12, Margin = new Thickness(10), StrokeThickness = 1.5, IsHitTestVisible = false,
-            Stroke = Brand.Brush(Color.FromArgb(0x80, 0x38, 0x82, 0xF6)), StrokeDashArray = new DoubleCollection { 5, 4 },
+            RadiusX = 14, RadiusY = 14, Margin = new Thickness(12), StrokeThickness = 1.6, IsHitTestVisible = false,
+            Stroke = Glass.Enabled ? DashRest : Brand.Brush(Color.FromArgb(0x80, 0x38, 0x82, 0xF6)), StrokeDashArray = new DoubleCollection { 6, 5 },
         };
-        var inner = new Grid { Height = 210 };
+        var inner = new Grid { Height = height };
         inner.Children.Add(_dropOutline);
         inner.Children.Add(stack);
-        var zone = Glass.Card(inner, new Thickness(0), 16);
+        var zone = Glass.Card(inner, new Thickness(0), 20);
         zone.Cursor = Cursors.Hand;
-        zone.Margin = new Thickness(0, 0, 0, 26);
+        zone.Margin = new Thickness(0, 0, 0, 24);
         zone.MouseLeftButtonUp += (_, _) => Browse();
         _dropZone = zone;
         return zone;
@@ -281,39 +300,72 @@ internal sealed class HomeWindow : GlassWindow
     private void HighlightDrop(bool on)
     {
         if (_dropZone == null || _dropOutline == null) return;
-        _dropZone.Background = on ? Ui.AccentSoft : Glass.CardBackground;
-        _dropOutline.Stroke = on ? Ui.Accent : Brand.Brush(Color.FromArgb(0x80, 0x38, 0x82, 0xF6));
+        _dropZone.Background = on ? Brand.Brush(Color.FromArgb(0xB3, 0xE8, 0xF1, 0xFF)) : Glass.CardBackground;
+        _dropOutline.Stroke = on ? Ui.Accent : Glass.Enabled ? DashRest : Brand.Brush(Color.FromArgb(0x80, 0x38, 0x82, 0xF6));
     }
 
-    private void RenderToolCards()
+    /// <summary>A small glass pill: icon and a word.</summary>
+    private static Border Pill(string glyph, string label, Action click)
     {
-        var grid = Columns();
-        foreach (var p in Pages.Where(p => p.Page != Page.Home))
-            grid.Children.Add(Card(p.Glyph, p.Label, p.Blurb, () => Show(p.Page)));
-        _content.Children.Add(grid);
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(new TextBlock { Text = glyph, FontFamily = Ui.Icons, FontSize = 14, Foreground = Ui.Accent, VerticalAlignment = VerticalAlignment.Center });
+        row.Children.Add(new TextBlock { Text = label, FontSize = 13.5, FontWeight = FontWeights.SemiBold, Foreground = Ui.Text, Margin = new Thickness(9, 0, 0, 1), VerticalAlignment = VerticalAlignment.Center });
+        var pill = Glass.Card(row, new Thickness(16, 10, 18, 10), 20);
+        pill.Margin = new Thickness(0, 0, 10, 10);
+        pill.Cursor = Cursors.Hand;
+        Hover(pill);
+        pill.MouseLeftButtonUp += (_, _) => click();
+        return pill;
     }
 
+    private static void Hover(Border b)
+    {
+        var restFill = b.Background; var restEdge = b.BorderBrush;
+        b.MouseEnter += (_, _) => { b.Background = Brand.Brush(Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF)); b.BorderBrush = Ui.Accent; };
+        b.MouseLeave += (_, _) => { b.Background = restFill; b.BorderBrush = restEdge; };
+    }
+
+    /// <summary>What a group can do: one glass pane with a short list, not a wall of cards.</summary>
     private void RenderCatalog(Page page)
     {
-        var title = Ui.Txt("What it can do", 13, bold: true, color: Ui.Muted);
-        title.Margin = new Thickness(2, 0, 0, 10);
-        _content.Children.Add(title);
-        var grid = Columns();
+        var list = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2 };
         foreach (var (glyph, name, text) in Catalog[page])
-            grid.Children.Add(Card(glyph, name, text, Browse));
-        _content.Children.Add(grid);
+        {
+            var row = new DockPanel { Margin = new Thickness(4, 8, 18, 8) };
+            var icon = new TextBlock { Text = glyph, FontFamily = Ui.Icons, FontSize = 18, Foreground = Ui.Accent, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 2, 14, 0) };
+            DockPanel.SetDock(icon, Dock.Left);
+            row.Children.Add(icon);
+            var texts = new StackPanel();
+            texts.Children.Add(Ui.Txt(name, 14, bold: true));
+            var d = Ui.Txt(text, 12.5, color: Ui.Muted);
+            d.TextWrapping = TextWrapping.Wrap;
+            d.TextTrimming = TextTrimming.None;
+            texts.Children.Add(d);
+            row.Children.Add(texts);
+            list.Children.Add(row);
+        }
+        _content.Children.Add(Glass.Card(list, new Thickness(18, 12, 18, 12), 18));
     }
 
     private void RenderActions(IReadOnlyList<string> files)
     {
         var actions = ActionRegistry.For(files, _settings());
-        var names = files.Count == 1 ? Path.GetFileName(files[0].TrimEnd('\\', '/')) : FileKinds.Describe(files);
-        Header("What should we do?", files.Count == 1 ? names : $"{names}: {string.Join(", ", files.Take(3).Select(f => Path.GetFileName(f.TrimEnd('\\', '/'))))}{(files.Count > 3 ? "..." : "")}");
+        string what = files.Count == 1 ? Path.GetFileName(files[0].TrimEnd('\\', '/')) : FileKinds.Describe(files);
 
-        var bar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, -6, 0, 22) };
-        bar.Children.Add(Ui.Btn(Ui.Glyph.Add, "Choose other files", Browse));
-        bar.Children.Add(Ui.Btn(null, "Clear", () => { _files = null; Render(); }));
-        _content.Children.Add(bar);
+        var head = new DockPanel { Margin = new Thickness(0, 4, 0, 22) };
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        buttons.Children.Add(Ui.Btn(Ui.Glyph.Add, "Other files", Browse));
+        buttons.Children.Add(Ui.Btn(null, "Clear", () => { _files = null; Render(); }));
+        DockPanel.SetDock(buttons, Dock.Right);
+        head.Children.Add(buttons);
+        var titles = new StackPanel();
+        var t = Ui.Txt(what, 24, bold: true);
+        titles.Children.Add(t);
+        var sub = Ui.Txt(files.Count == 1 ? "What should Droppo do with it?" : "What should Droppo do with them?", 13.5, color: Ui.Muted);
+        sub.Margin = new Thickness(0, 2, 0, 0);
+        titles.Children.Add(sub);
+        head.Children.Add(titles);
+        _content.Children.Add(head);
 
         if (actions.Count == 0)
         {
@@ -325,16 +377,12 @@ internal sealed class HomeWindow : GlassWindow
         foreach (var group in groups)
         {
             if (_page != Page.Home && group.Key != _page) continue;
-            var info = Pages.First(p => p.Page == group.Key);
-            var heading = Ui.Txt(info.Label, 13, bold: true, color: Ui.Muted);
-            heading.Margin = new Thickness(2, 0, 0, 10);
-            _content.Children.Add(heading);
-            var wrap = Columns();
-            wrap.Margin = new Thickness(0, 0, 0, 12);
+            Label(Pages.First(p => p.Page == group.Key).Label);
+            var wrap = new WrapPanel { Margin = new Thickness(0, 0, 0, 14) };
             foreach (var action in group)
             {
                 var a = action;
-                wrap.Children.Add(Card(GlyphOf(a), a.Label, a.Hint, () => ActionChosen?.Invoke(a, files)));
+                wrap.Children.Add(ActionTile(GlyphOf(a), a.Label, a.Hint, () => ActionChosen?.Invoke(a, files)));
             }
             _content.Children.Add(wrap);
         }
@@ -342,45 +390,31 @@ internal sealed class HomeWindow : GlassWindow
             _content.Children.Add(Ui.Txt($"Nothing under {Pages.First(p => p.Page == _page).Label} for these files. Try Home to see everything.", 13.5, color: Ui.Muted));
     }
 
-    private static System.Windows.Controls.Primitives.UniformGrid Columns() => new() { Columns = 3, Margin = new Thickness(-6, 0, -6, 0) };
-
-    /// <summary>A white glass card: icon on an ice-blue tile beside a title and a line of detail.</summary>
-    private static Border Card(string glyph, string title, string detail, Action click)
+    /// <summary>A glass tile for one action: icon, name, a few words.</summary>
+    private static Border ActionTile(string glyph, string title, string detail, Action click)
     {
-        var icon = new Border
-        {
-            Width = 38, Height = 38, CornerRadius = new CornerRadius(11), Background = Ui.AccentSoft, HorizontalAlignment = HorizontalAlignment.Left,
-            Child = new TextBlock { Text = glyph, FontFamily = Ui.Icons, FontSize = 17, Foreground = Ui.Accent, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center },
-        };
-        icon.VerticalAlignment = VerticalAlignment.Top;
-        var texts = new StackPanel { Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-        var t = Ui.Txt(title, 14, bold: true);
-        texts.Children.Add(t);
-        var d = Ui.Txt(detail, 12, color: Ui.Muted);
-        d.TextWrapping = TextWrapping.Wrap;
-        d.TextTrimming = TextTrimming.None;
-        d.Margin = new Thickness(0, 2, 0, 0);
-        texts.Children.Add(d);
+        var icon = new TextBlock { Text = glyph, FontFamily = Ui.Icons, FontSize = 18, Foreground = Ui.Accent, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+        var texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        texts.Children.Add(Ui.Txt(title, 14, bold: true));
+        texts.Children.Add(Ui.Txt(detail, 12, color: Ui.Muted));
         var row = new DockPanel();
         DockPanel.SetDock(icon, Dock.Left);
         row.Children.Add(icon);
         row.Children.Add(texts);
-        var card = Glass.Card(row, new Thickness(14, 14, 14, 14), 14);
-        card.MinHeight = 74;
-        card.Margin = new Thickness(6, 0, 6, 12);
-        card.Cursor = Cursors.Hand;
-        var rest = card.BorderBrush;
-        card.MouseEnter += (_, _) => card.BorderBrush = Ui.Accent;
-        card.MouseLeave += (_, _) => card.BorderBrush = rest;
-        card.MouseLeftButtonUp += (_, _) => click();
-        return card;
+        var tile = Glass.Card(row, new Thickness(16, 12, 16, 12), 16);
+        tile.Width = 204;
+        tile.Margin = new Thickness(0, 0, 10, 10);
+        tile.Cursor = Cursors.Hand;
+        Hover(tile);
+        tile.MouseLeftButtonUp += (_, _) => click();
+        return tile;
     }
 
     private UIElement Tip()
     {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(2, 12, 0, 0) };
-        row.Children.Add(new TextBlock { Text = "", FontFamily = Ui.Icons, FontSize = 13, Foreground = Ui.Accent, VerticalAlignment = VerticalAlignment.Center });
-        var text = Ui.Txt($"Tip: anywhere in Windows, start dragging a file and hold {_settings().TriggerKey} to open the Droppo wheel.", 12.5, color: Ui.Muted);
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 18, 0, 0) };
+        row.Children.Add(new TextBlock { Text = "\uE946", FontFamily = Ui.Icons, FontSize = 13, Foreground = Ui.Accent, VerticalAlignment = VerticalAlignment.Center });
+        var text = Ui.Txt($"Anywhere in Windows: start dragging a file, then hold {_settings().TriggerKey}.", 12.5, color: Ui.Muted);
         text.Margin = new Thickness(8, 0, 0, 0);
         row.Children.Add(text);
         return row;

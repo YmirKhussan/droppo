@@ -31,7 +31,7 @@
 
     <Style TargetType="{x:Type ComboBox}">
         <Setter Property="Foreground" Value="#FF0F2D5B" />
-        <Setter Property="Background" Value="#FFFFFFFF" />
+        <Setter Property="Background" Value="#E6FFFFFF" />
         <Setter Property="BorderBrush" Value="#FFD6E2F3" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="10,0,28,0" />

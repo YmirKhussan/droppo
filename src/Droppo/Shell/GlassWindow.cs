@@ -44,7 +44,22 @@ internal class GlassWindow : Window
     {
         _card = card;
         _overlay = overlayCaption;
-        Background = Glass.WindowBackground;
+        // see-through: Windows blurs what's behind, we lay a light frost over it.
+        // If the blur can't be switched on, fall back to the painted sky backdrop (never a grey see-through window).
+        bool glass = Glass.Enabled;
+        Background = glass ? Glass.WindowTint : Glass.WindowBackground;
+        if (glass) _chrome.GlassFrameThickness = new Thickness(-1);
+        SourceInitialized += (_, _) =>
+        {
+            if (!glass) return;
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (System.Windows.Interop.HwndSource.FromHwnd(hwnd)?.CompositionTarget is { } target) target.BackgroundColor = Colors.Transparent;
+            if (!Glass.EnableBlurBehind(hwnd))
+            {
+                Background = Glass.WindowBackground;
+                Log.Write("Window blur unavailable, using the painted backdrop.");
+            }
+        };
         Foreground = Ui.Text;
         FontFamily = Ui.Body;
         UseLayoutRounding = true;
