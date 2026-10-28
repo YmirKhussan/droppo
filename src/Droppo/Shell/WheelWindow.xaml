@@ -1,0 +1,59 @@
+<Window x:Class="Droppo.Shell.WheelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Droppo"
+        Width="380" Height="380"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" Topmost="True" ShowInTaskbar="False" ShowActivated="False"
+        Focusable="False" AllowDrop="True" UseLayoutRounding="True" FontFamily="Segoe UI">
+
+    <!-- Only the filled shapes catch the mouse; the square corners stay click-through. -->
+    <Canvas x:Name="Root" Width="380" Height="380" AllowDrop="True" RenderTransformOrigin="0.5,0.5">
+        <Canvas.RenderTransform>
+            <ScaleTransform x:Name="RootScale" ScaleX="1" ScaleY="1" />
+        </Canvas.RenderTransform>
+
+        <!-- frosted disc: soft shadow, milky glass, a fine dark rim for light wallpapers and a bright inner edge -->
+        <Ellipse x:Name="Backdrop" Width="340" Height="340" Canvas.Left="20" Canvas.Top="20" Stroke="#261C2C49" StrokeThickness="1">
+            <Ellipse.Fill>
+                <LinearGradientBrush StartPoint="0.2,0" EndPoint="0.8,1">
+                    <GradientStop Color="#F0FFFFFF" Offset="0" />
+                    <GradientStop Color="#E6F4F6FA" Offset="1" />
+                </LinearGradientBrush>
+            </Ellipse.Fill>
+            <Ellipse.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.22" Color="#1C2C49" />
+            </Ellipse.Effect>
+        </Ellipse>
+        <Ellipse Width="336" Height="336" Canvas.Left="22" Canvas.Top="22" Stroke="#B3FFFFFF" StrokeThickness="1.5" IsHitTestVisible="False" />
+
+        <Canvas x:Name="SliceLayer" Width="380" Height="380" />
+
+        <!-- sheen across the top half, like light on glass -->
+        <Ellipse Width="340" Height="340" Canvas.Left="20" Canvas.Top="20" IsHitTestVisible="False">
+            <Ellipse.Fill>
+                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                    <GradientStop Color="#38FFFFFF" Offset="0" />
+                    <GradientStop Color="#00FFFFFF" Offset="0.5" />
+                </LinearGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Ellipse x:Name="Hub" Width="108" Height="108" Canvas.Left="136" Canvas.Top="136"
+                 Fill="#2857C5" Stroke="#66FFFFFF" StrokeThickness="2" Cursor="Hand">
+            <Ellipse.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Direction="270" Opacity="0.25" Color="#1C2C49" />
+            </Ellipse.Effect>
+        </Ellipse>
+
+        <Grid x:Name="HubText" Width="96" Height="96" Canvas.Left="142" Canvas.Top="142" IsHitTestVisible="False">
+            <StackPanel VerticalAlignment="Center">
+                <ContentControl x:Name="HubMark" Width="26" Height="26" Margin="0,0,0,5" HorizontalAlignment="Center" Focusable="False" />
+                <TextBlock x:Name="HubTitle" Text="Drop here" Foreground="White" FontSize="13" FontWeight="SemiBold"
+                           TextAlignment="Center" TextWrapping="Wrap" />
+                <TextBlock x:Name="HubSub" Text="" Foreground="#D9FFFFFF" FontSize="10.5"
+                           TextAlignment="Center" TextWrapping="Wrap" Margin="0,2,0,0" />
+            </StackPanel>
+        </Grid>
+    </Canvas>
+</Window>

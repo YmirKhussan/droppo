@@ -1,0 +1,8 @@
+Copyright (c) 2026 Amir Hassan. All rights reserved.
+
+The source code is published so people can see how Droppo works. No licence is
+granted to copy, modify, redistribute or sell it. You're welcome to download and
+use the official installer from the Releases page.
+
+Droppo includes third-party programs under their own licences (FFmpeg: GPLv3,
+qpdf: Apache 2.0, .NET: MIT). See installer/THIRD-PARTY-NOTICES.txt.

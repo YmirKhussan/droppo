@@ -1,0 +1,17 @@
+Droppo includes these programs. Each keeps its own licence.
+
+FFmpeg (tools\ffmpeg\ffmpeg.exe)
+  Used for pictures, video and audio. This is the "essentials" build by gyan.dev,
+  licensed under the GNU General Public License version 3 (GPLv3).
+  It is a separate program that Droppo runs; it is not modified.
+  Source code: https://ffmpeg.org/download.html and https://www.gyan.dev/ffmpeg/builds/
+  Licence text: licenses\FFmpeg-LICENSE.txt (if included) or https://www.gnu.org/licenses/gpl-3.0.html
+
+qpdf (tools\qpdf\)
+  Used for the PDF tools. Licensed under the Apache License 2.0.
+  Source code: https://github.com/qpdf/qpdf
+  Licence text: licenses\ folder, or https://www.apache.org/licenses/LICENSE-2.0
+
+.NET runtime, WPF and Windows Forms (the rest of the files next to Droppo.exe)
+  Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License.
+  https://github.com/dotnet/runtime  https://github.com/dotnet/wpf  https://github.com/dotnet/winforms

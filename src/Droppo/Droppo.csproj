@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- The Windows 10 SDK version unlocks built-in Windows features like the PDF renderer. -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the tray icon (NotifyIcon). Referenced through the "Forms" alias to avoid name clashes with WPF. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Droppo</RootNamespace>
+    <AssemblyName>Droppo</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>0.6.0</Version>
+    <Company>Droppo</Company>
+    <Description>Droppo. Drop it. Done.</Description>
+    <Product>Droppo</Product>
+    <!-- WFAC010: WinForms wants DPI set in code, but this is a WPF app and WPF reads it from app.manifest. Keep the manifest. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!-- control styles, loaded safely at startup by Shell\Theme.cs (not compiled as pages) -->
+    <Page Remove="Theme\*.xaml" />
+    <EmbeddedResource Include="Theme\*.xaml" LogicalName="Droppo.Theme.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>
