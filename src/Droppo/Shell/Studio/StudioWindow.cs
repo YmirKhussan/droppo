@@ -142,8 +142,8 @@ internal sealed class StudioWindow : GlassWindow
         var emptyText = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         var emptyMark = new Border
         {
-            Width = 88, Height = 88, CornerRadius = new CornerRadius(24), Background = Ui.AccentSoft,
-            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(40, Ui.Accent),
+            Width = 64, Height = 64, CornerRadius = new CornerRadius(18), Background = Ui.AccentSoft,
+            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(30, Ui.Accent),
         };
         emptyText.Children.Add(emptyMark);
         var emptyLine = Ui.Txt("Drop PDFs, images or Office files here", 17, bold: true);
@@ -153,7 +153,18 @@ internal sealed class StudioWindow : GlassWindow
         var emptySub = Ui.Txt("or click Add files. Then drag pages to put them in order.", 13, color: Ui.Muted);
         emptySub.HorizontalAlignment = HorizontalAlignment.Center;
         emptyText.Children.Add(emptySub);
-        _empty = new Border { Child = emptyText, IsHitTestVisible = false };
+        // the same dashed drop zone as the main window
+        var emptyGrid = new Grid { Width = 560, Height = 250 };
+        emptyGrid.Children.Add(new System.Windows.Shapes.Rectangle
+        {
+            RadiusX = 12, RadiusY = 12, Margin = new Thickness(10), StrokeThickness = 1.5,
+            Stroke = Brand.Brush(Color.FromArgb(0x80, 0x38, 0x82, 0xF6)), StrokeDashArray = new DoubleCollection { 5, 4 },
+        });
+        emptyGrid.Children.Add(emptyText);
+        var emptyCard = Glass.Card(emptyGrid, new Thickness(0), 16);
+        emptyCard.HorizontalAlignment = HorizontalAlignment.Center;
+        emptyCard.VerticalAlignment = VerticalAlignment.Center;
+        _empty = new Border { Child = emptyCard, IsHitTestVisible = false };
 
         _gridView.Children.Add(_gridScroll);
         _gridView.Children.Add(_empty);

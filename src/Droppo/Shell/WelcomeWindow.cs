@@ -19,8 +19,7 @@ internal static class WelcomeWindow
         var headline = Ui.Txt(Brand.Tagline, 24, bold: true);
         headline.Margin = new Thickness(0, 22, 0, 0);
         panel.Children.Add(headline);
-        panel.Children.Add(Para("Droppo is running. There's no window to open: it sits by the clock and waits for you to drag a file. " +
-                                "Can't see the icon? Click the ^ arrow next to the clock.", Ui.Muted));
+        panel.Children.Add(Para("Droppo is ready. Drop files on its window, or use the wheel from anywhere in Windows:", Ui.Muted));
 
         var steps = new StackPanel();
         steps.Children.Add(Step("1", "Start dragging a file (or a few) in File Explorer or on the desktop."));
@@ -30,8 +29,8 @@ internal static class WelcomeWindow
         card.Margin = new Thickness(0, 6, 0, 0);
         panel.Children.Add(card);
 
-        panel.Children.Add(Para("Click the tray icon for Settings, or right-click it for PDF Studio. " +
-                                "Opening Droppo from the Start menu again also brings up Settings.", Ui.Muted));
+        panel.Children.Add(Para("Droppo keeps running by the clock (click the ^ arrow if you can't see it). " +
+                                "Click its icon, or open it from the Start menu, to bring this window back.", Ui.Muted));
 
         panel.Children.Add(Ui.ButtonRow(
             Ui.Btn(null, "Try it now", () => { w.Close(); tryIt(); }),

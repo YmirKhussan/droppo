@@ -287,12 +287,9 @@ internal sealed class HomeWindow : GlassWindow
 
     private void RenderToolCards()
     {
-        var grid = new WrapPanel();
+        var grid = Columns();
         foreach (var p in Pages.Where(p => p.Page != Page.Home))
-        {
-            var card = Card(p.Glyph, p.Label, p.Blurb, () => Show(p.Page), width: 252);
-            grid.Children.Add(card);
-        }
+            grid.Children.Add(Card(p.Glyph, p.Label, p.Blurb, () => Show(p.Page)));
         _content.Children.Add(grid);
     }
 
@@ -301,9 +298,9 @@ internal sealed class HomeWindow : GlassWindow
         var title = Ui.Txt("What it can do", 13, bold: true, color: Ui.Muted);
         title.Margin = new Thickness(2, 0, 0, 10);
         _content.Children.Add(title);
-        var grid = new WrapPanel();
+        var grid = Columns();
         foreach (var (glyph, name, text) in Catalog[page])
-            grid.Children.Add(Card(glyph, name, text, Browse, width: 252));
+            grid.Children.Add(Card(glyph, name, text, Browse));
         _content.Children.Add(grid);
     }
 
@@ -332,11 +329,12 @@ internal sealed class HomeWindow : GlassWindow
             var heading = Ui.Txt(info.Label, 13, bold: true, color: Ui.Muted);
             heading.Margin = new Thickness(2, 0, 0, 10);
             _content.Children.Add(heading);
-            var wrap = new WrapPanel { Margin = new Thickness(0, 0, 0, 14) };
+            var wrap = Columns();
+            wrap.Margin = new Thickness(0, 0, 0, 12);
             foreach (var action in group)
             {
                 var a = action;
-                wrap.Children.Add(Card(GlyphOf(a), a.Label, a.Hint, () => ActionChosen?.Invoke(a, files), width: 200));
+                wrap.Children.Add(Card(GlyphOf(a), a.Label, a.Hint, () => ActionChosen?.Invoke(a, files)));
             }
             _content.Children.Add(wrap);
         }
@@ -344,27 +342,32 @@ internal sealed class HomeWindow : GlassWindow
             _content.Children.Add(Ui.Txt($"Nothing under {Pages.First(p => p.Page == _page).Label} for these files. Try Home to see everything.", 13.5, color: Ui.Muted));
     }
 
-    /// <summary>A white glass card: icon on an ice-blue tile, a title, a line of detail.</summary>
-    private static Border Card(string glyph, string title, string detail, Action click, double width)
+    private static System.Windows.Controls.Primitives.UniformGrid Columns() => new() { Columns = 3, Margin = new Thickness(-6, 0, -6, 0) };
+
+    /// <summary>A white glass card: icon on an ice-blue tile beside a title and a line of detail.</summary>
+    private static Border Card(string glyph, string title, string detail, Action click)
     {
         var icon = new Border
         {
             Width = 38, Height = 38, CornerRadius = new CornerRadius(11), Background = Ui.AccentSoft, HorizontalAlignment = HorizontalAlignment.Left,
             Child = new TextBlock { Text = glyph, FontFamily = Ui.Icons, FontSize = 17, Foreground = Ui.Accent, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center },
         };
-        var stack = new StackPanel();
-        stack.Children.Add(icon);
+        icon.VerticalAlignment = VerticalAlignment.Top;
+        var texts = new StackPanel { Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         var t = Ui.Txt(title, 14, bold: true);
-        t.Margin = new Thickness(0, 12, 0, 2);
-        stack.Children.Add(t);
+        texts.Children.Add(t);
         var d = Ui.Txt(detail, 12, color: Ui.Muted);
         d.TextWrapping = TextWrapping.Wrap;
         d.TextTrimming = TextTrimming.None;
-        stack.Children.Add(d);
-        var card = Glass.Card(stack, new Thickness(16, 16, 16, 16), 14);
-        card.Width = width;
-        card.MinHeight = 128;
-        card.Margin = new Thickness(0, 0, 14, 14);
+        d.Margin = new Thickness(0, 2, 0, 0);
+        texts.Children.Add(d);
+        var row = new DockPanel();
+        DockPanel.SetDock(icon, Dock.Left);
+        row.Children.Add(icon);
+        row.Children.Add(texts);
+        var card = Glass.Card(row, new Thickness(14, 14, 14, 14), 14);
+        card.MinHeight = 74;
+        card.Margin = new Thickness(6, 0, 6, 12);
         card.Cursor = Cursors.Hand;
         var rest = card.BorderBrush;
         card.MouseEnter += (_, _) => card.BorderBrush = Ui.Accent;

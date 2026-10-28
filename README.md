@@ -1,6 +1,6 @@
 ![Droppo](brand/droppo-banner.png)
 
-# Droppo (v0.7)
+# Droppo (v0.8)
 
 **Drop it. Done.** Droppo is a small Windows utility for everyday file jobs. Drag a file, hold **Shift**, and a wheel of actions pops up under your cursor. Release on a slice and the result lands next to the original (or in a folder you pick in Settings). Nothing is uploaded, nothing is overwritten.
 
@@ -35,6 +35,10 @@ Optional extras the installer can't include:
 First run takes a few minutes. The FFmpeg download is cached in `dist\downloads`; run `build-installer.bat -Fresh` to get a newer FFmpeg. Bump `<Version>` in `src\Droppo\Droppo.csproj` before building a new release: installing a newer version over an old one just updates it, settings are kept.
 
 **Tinkering**: `run.bat` still builds and runs straight from the code (needs the .NET SDK, FFmpeg and qpdf on your PC). Close the installed copy first (tray > Quit Droppo), only one can run at a time.
+
+## The main window
+
+Open Droppo from the Start menu (or click its icon by the clock). Drop files onto the big drop zone, or click it to browse, and Droppo shows everything it can do with them, grouped into Convert, Compress, PDF, Organise and Tools. Click one to run it. The sidebar filters by group and has PDF Studio and Settings.
 
 ## Use the wheel
 
@@ -137,14 +141,14 @@ Restart the app after editing the file by hand. Your signature is in `signature.
 
 ## Look and feel
 
-- **Colours**: Droppo Cobalt `#2857C5` for actions, Deep Navy `#1C2C49` text, Cloud White `#F4F6FA` surfaces, Slate `#657087` secondary text, Pale Blue `#DCE7FF` highlights.
-- **Glass**: on Windows 11, Studio and Settings use Mica and dialogs use Acrylic. Windows draws the blur itself, so it costs the app nothing. The wheel and the notification card are frosted panels. Glass switches off by itself on Windows 10, with "Transparency effects" off, or in high contrast.
+- **Colours**: Cobalt Blue `#3882F6` for actions, Deep Navy `#0F2D5B` text, Ice Blue `#E8F1FF` hover and selected, Slate `#64748B` secondary text, Glass White `#FFFFFF` cards.
+- **Glass**: windows sit on a light sky backdrop with soft glassy ribbons; content lives on white frosted cards with soft shadows. The wheel and the notification card blur whatever is on your screen behind them. Switch it off in Settings for plain white.
 - **Motion**: every animation is under 200 ms (wheel opens and hover, buttons, cards). They follow Windows' "Animation effects" setting and can be switched off in Settings.
 - **Control styles** live in `src/Droppo/Theme/*.xaml` and load one file at a time. If one ever fails, that control just keeps the standard Windows look (the log says which).
 
 ## Brand files
 
-`brand/` has the logo as SVG and PNG: app icon (`droppo-icon.svg`, 256/512/1024 PNG), symbol (cobalt and white), wordmark, light and dark logos, the README banner and a preview of the app. The wordmark is Nunito ExtraBold (SIL Open Font Licence) turned into outlines, so no font needs installing. The Windows icon (`src/Droppo/Assets/app.ico`) has 9 sizes; the 16 px one is drawn pixel by pixel for the tray.
+`brand/` has the logo as SVG and PNG: app icon (`droppo-icon.svg`, 256/512/1024 PNG), symbol (cobalt and white), wordmark, light and dark logos, the README banner and a preview of the app. The icon is a white "D" with an arrow cut through it, on a blue gradient tile. The wordmark is Poppins Bold (SIL Open Font Licence) turned into outlines, so no font needs installing. The Windows icon (`src/Droppo/Assets/app.ico`) has 9 sizes; the 16 px one is drawn pixel by pixel for the tray.
 
 ## Troubleshooting
 
