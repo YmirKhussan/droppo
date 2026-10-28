@@ -93,8 +93,8 @@ internal static class Glass
     /// <summary>Frost for a window over the blurred screen: more white over dark screens so text stays readable.</summary>
     public static Brush FrostFor(double brightness)
     {
-        byte top = brightness < 0.3 ? (byte)0xE0 : brightness < 0.55 ? (byte)0xC7 : (byte)0xAD;
-        byte bottom = (byte)Math.Max(0, top - 0x1A);
+        byte top = brightness < 0.3 ? (byte)0xC7 : brightness < 0.55 ? (byte)0xA6 : (byte)0x8C;
+        byte bottom = (byte)Math.Max(0, top - 0x20);
         return Gradient(Color.FromArgb(top, 0xF8, 0xFB, 0xFF), Color.FromArgb(bottom, 0xEC, 0xF3, 0xFF));
     }
 

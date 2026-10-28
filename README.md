@@ -1,6 +1,6 @@
 ![Droppo](brand/droppo-banner.png)
 
-# Droppo (v0.8)
+# Droppo (v0.9)
 
 **Drop it. Done.** Droppo is a small Windows utility for everyday file jobs. Drag a file, hold **Shift**, and a wheel of actions pops up under your cursor. Release on a slice and the result lands next to the original (or in a folder you pick in Settings). Nothing is uploaded, nothing is overwritten.
 
@@ -142,7 +142,7 @@ Restart the app after editing the file by hand. Your signature is in `signature.
 ## Look and feel
 
 - **Colours**: Cobalt Blue `#3882F6` for actions, Deep Navy `#0F2D5B` text, Ice Blue `#E8F1FF` hover and selected, Slate `#64748B` secondary text, Glass White `#FFFFFF` cards.
-- **Glass**: windows sit on a light sky backdrop with soft glassy ribbons; content lives on white frosted cards with soft shadows. The wheel and the notification card blur whatever is on your screen behind them. Switch it off in Settings for plain white.
+- **Glass**: Droppo's windows are see-through. Droppo copies what's on your screen behind each window, blurs it, and lays a light frost on top (more frost over dark wallpapers so text stays readable). The copy slides as you drag the window and refreshes when you stop or come back to it; Droppo hides itself from that copy for a split second, so it never catches itself. Switch glass off in Settings for plain windows.
 - **Motion**: every animation is under 200 ms (wheel opens and hover, buttons, cards). They follow Windows' "Animation effects" setting and can be switched off in Settings.
 - **Control styles** live in `src/Droppo/Theme/*.xaml` and load one file at a time. If one ever fails, that control just keeps the standard Windows look (the log says which).
 
