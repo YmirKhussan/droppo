@@ -24,7 +24,7 @@ Optional extras the installer can't include:
 
 ## Make the installer (you, once per version)
 
-**Easiest: let GitHub build it.** Bump `<Version>` in `src\Droppo\Droppo.csproj`, commit, and push a tag with the same number (for example `v0.6.1`). GitHub builds the installer on Windows and puts it on the Releases page. You can also run it by hand: Actions tab > **Build installer** > Run workflow (the .exe appears under the run's Artifacts).
+**Easiest: let GitHub build it.** Bump `<Version>` in `src\Droppo\Droppo.csproj` (for example to `0.6.1`) and push to `main`. GitHub builds the installer on Windows and publishes it as release `v0.6.1` on the Releases page. Pushes that don't change the version still get built (handy as a check) but don't make a release. You can also run it by hand: Actions tab > **Build installer** > Run workflow (the .exe appears under the run's Artifacts).
 
 **On your own PC:** double-click **`build-installer.bat`**. It:
 1. installs the .NET SDK and Inno Setup with winget if they're missing,
