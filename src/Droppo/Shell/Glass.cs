@@ -152,7 +152,7 @@ internal static class Glass
     }
 
     /// <summary>How much white to lay over the blurred desktop so navy text stays readable (more on dark desktops).</summary>
-    public static double TintFor(double brightness) => brightness < 0.35 ? 0.82 : brightness < 0.6 ? 0.72 : 0.6;
+    public static double TintFor(double brightness) => brightness < 0.3 ? 0.66 : brightness < 0.55 ? 0.56 : 0.48;
 
     // ---------- window corners ----------
 

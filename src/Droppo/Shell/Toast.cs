@@ -26,7 +26,8 @@ internal sealed class Toast : Window
     private const double CardWidth = 360;
 
     private readonly Border _card;
-    private readonly Grid _behind = new() { IsHitTestVisible = false, VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Left };
+    // a Canvas so the (taller) screen picture never makes the card taller
+    private readonly Canvas _behind = new() { IsHitTestVisible = false, ClipToBounds = true, VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left };
     private const double BehindHeight = 230; // screen strip grabbed behind the card (taller than any card)
     private static readonly Brush PlainCard = MakeCardFill(0.97, 0.93);
     private readonly Border _icon = new() { Width = 36, Height = 36, CornerRadius = new CornerRadius(18), VerticalAlignment = VerticalAlignment.Top };
@@ -101,6 +102,8 @@ internal sealed class Toast : Window
             _behind.Width = _card.ActualWidth;
             _behind.Height = _card.ActualHeight;
             _behind.Clip = new RectangleGeometry(new Rect(0, 0, _card.ActualWidth, _card.ActualHeight), 14, 14);
+            // the picture lines up with the card's bottom edge (that's where it was taken from)
+            foreach (UIElement child in _behind.Children) Canvas.SetTop(child, _card.ActualHeight - BehindHeight);
         };
         _card.MouseLeftButtonUp += (_, e) =>
         {
@@ -202,7 +205,7 @@ internal sealed class Toast : Window
             var image = Glass.BlurredImage(c.Image);
             image.Width = CardWidth;
             image.Height = BehindHeight;
-            image.VerticalAlignment = VerticalAlignment.Bottom;
+            Canvas.SetTop(image, _card.ActualHeight > 0 ? _card.ActualHeight - BehindHeight : 0);
             _behind.Children.Add(image);
             double tint = Glass.TintFor(c.Brightness);
             _card.Background = MakeCardFill(Math.Min(1, tint + 0.08), tint);

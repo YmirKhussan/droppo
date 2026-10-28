@@ -21,7 +21,7 @@ public partial class WheelWindow : Window
     private const double Lift = 4; // how far the slice under the cursor moves out
 
     // frosted slices on the glass disc; the one under the cursor turns cobalt
-    private static readonly Color SliceColor = Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF);
+    private static readonly Color SliceColor = Color.FromArgb(0x52, 0xFF, 0xFF, 0xFF);
     private static readonly Color LabelColor = Color.FromRgb(0x1C, 0x2C, 0x49);
     private static readonly Color HintColor = Color.FromRgb(0x65, 0x70, 0x87);
     private static readonly Color OnAccent = Colors.White;

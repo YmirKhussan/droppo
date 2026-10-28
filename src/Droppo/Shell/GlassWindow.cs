@@ -62,7 +62,11 @@ internal class GlassWindow : Window
         base.OnContentChanged(oldContent, newContent);
         if (_wrapping || ReferenceEquals(newContent, _frame) || newContent is not UIElement body) return;
         _wrapping = true;
-        try { Content = Frame(body); }
+        try
+        {
+            Content = null; // let go of it first: an element can only have one parent
+            Content = Frame(body);
+        }
         finally { _wrapping = false; }
     }
 

@@ -61,6 +61,7 @@ internal static class Previews
         var photo = new[] { Path.Combine(_out, "holiday.jpg") };
         wheel.ShowArmedForPreview(center, photo, ActionRegistry.For(photo, settings), 5);
         await Delay(700);
+        Notes.AppendLine($"Wheel glass picture: {(wheel.BehindLayer.Children.Count > 0 ? "yes" : "no")}");
         Snap(wheel, "wheel");
         wheel.HideNow();
         await Delay(300);
