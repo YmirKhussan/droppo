@@ -15,10 +15,10 @@ namespace Droppo.Shell.Studio;
 /// </summary>
 internal static class Ui
 {
-    private static readonly Brush SolidBackground = Solid(0xF4, 0xF6, 0xFA);   // Cloud White
+    private static readonly Brush SolidBackground = Solid(0xF4, 0xF7, 0xFC);   // Cloud
     private static readonly Brush SolidSurface = Solid(0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassButton = Solid(0xC7, 0xFF, 0xFF, 0xFF);
-    private static readonly Brush GlassTile = Solid(0x66, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassButton = Solid(0xF2, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassTile = Solid(0xCC, 0xFF, 0xFF, 0xFF);
 
     /// <summary>Canvas areas inside a window: see-through with glass on, so the backdrop shows.</summary>
     public static Brush Background => Glass.Enabled ? Brushes.Transparent : SolidBackground;
@@ -30,20 +30,20 @@ internal static class Ui
     public static Brush ButtonFill => Glass.Enabled ? GlassButton : SolidSurface;
     /// <summary>Edges of glass bars: a line of light with glass on, a hairline without.</summary>
     public static Brush Edge => Glass.Enabled ? GlassEdge : Line;
-    private static readonly Brush GlassEdge = Solid(0xB3, 0xFF, 0xFF, 0xFF);
+    private static readonly Brush GlassEdge = Solid(0xE6, 0xFF, 0xFF, 0xFF);
 
     /// <summary>Page tiles in Studio.</summary>
     public static Brush TileFill => Glass.Enabled ? GlassTile : Brushes.Transparent;
 
-    public static readonly Brush Line = Solid(0x26, 0x1C, 0x2C, 0x49);      // navy at 15%: works on solid and glass
-    public static readonly Brush Text = Solid(0x1C, 0x2C, 0x49);            // Deep Navy
-    public static readonly Brush Muted = Solid(0x65, 0x70, 0x87);           // Slate Grey
-    public static readonly Brush Accent = Solid(0x28, 0x57, 0xC5);          // Droppo Cobalt
-    public static readonly Brush AccentSoft = Solid(0xDC, 0xE7, 0xFF);      // Pale Blue
-    public static readonly Brush Hover = Solid(0xEE, 0xF3, 0xFD);
-    public static readonly Brush Danger = Solid(0xC9, 0x3A, 0x3A);
-    public static readonly Brush Success = Solid(0x1E, 0x8E, 0x5A);
-    public static readonly Brush Shade = Solid(0x99, 0xF4, 0xF6, 0xFA);
+    public static readonly Brush Line = Solid(0x24, 0x0F, 0x2D, 0x5B);      // navy at 14%: works on solid and glass
+    public static readonly Brush Text = Solid(0x0F, 0x2D, 0x5B);            // Deep Navy
+    public static readonly Brush Muted = Solid(0x64, 0x74, 0x8B);           // Slate Grey
+    public static readonly Brush Accent = Solid(0x38, 0x82, 0xF6);          // Cobalt Blue
+    public static readonly Brush AccentSoft = Solid(0xE8, 0xF1, 0xFF);      // Ice Blue
+    public static readonly Brush Hover = Solid(0xF0, 0xF6, 0xFF);
+    public static readonly Brush Danger = Solid(0xE5, 0x48, 0x4D);
+    public static readonly Brush Success = Solid(0x22, 0xB5, 0x73);
+    public static readonly Brush Shade = Solid(0x99, 0xF4, 0xF7, 0xFC);
 
     public static readonly FontFamily Icons = new("Segoe Fluent Icons, Segoe MDL2 Assets");
     public static readonly FontFamily Body = new("Segoe UI");

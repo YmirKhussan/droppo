@@ -76,7 +76,9 @@ internal static class Previews
         toast.Show(ToastKind.Working, "Working on it…", "Smaller · 1 video");
         await Delay(700);
         Snap(toast, "toast working");
-        toast.Show(ToastKind.Done, "All done.", "holiday-1080x1080.jpg", reveal: Path.Combine(_out, "x.jpg"), open: null);
+        var made = Path.Combine(_out, "holiday-1080x1080.jpg");
+        File.WriteAllText(made, "x");
+        toast.Show(ToastKind.Done, "All done!", "Your file is ready: holiday-1080x1080.jpg", reveal: made, open: made);
         await Delay(500);
         Snap(toast, "toast done");
         toast.Dismiss();
@@ -101,6 +103,16 @@ internal static class Previews
         Dialogs.Watermark(null, desktop);
 
         // ---- windows ----
+        var home = new HomeWindow(() => settings) { Tag = "keep" };
+        home.Show();
+        await Delay(900);
+        Snap(home, "home");
+        var picks = new[] { Path.Combine(_out, "holiday.jpg") };
+        File.WriteAllText(picks[0], "x");
+        home.ShowFiles(picks);
+        await Delay(700);
+        Snap(home, "home with a photo");
+        home.Close();
         await ShowAndWait(MakeWelcome(settings));
         await ShowAndWait(new SettingsWindow(settings));
         await ShowAndWait(new StudioWindow(Array.Empty<string>(), context, (_, _, _) => { }));

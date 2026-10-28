@@ -19,6 +19,7 @@ internal sealed class Tray : IDisposable
     public event Action? TestWheelRequested;
     public event Action? StudioRequested;
     public event Action? SettingsRequested;
+    public event Action? HomeRequested;
 
     /// <summary>Shows a short message the Droppo way (set by the app).</summary>
     public Action<ToastKind, string, string>? Say { get; set; }
@@ -43,7 +44,7 @@ internal sealed class Tray : IDisposable
         _icon.BalloonTipClicked += (_, _) => Reveal(_revealOnClick);
         _icon.MouseClick += (_, e) =>
         {
-            if (e.Button == Forms.MouseButtons.Left) SettingsRequested?.Invoke();
+            if (e.Button == Forms.MouseButtons.Left) HomeRequested?.Invoke();
         };
     }
 
@@ -85,6 +86,7 @@ internal sealed class Tray : IDisposable
         });
         menu.Items.Add(new Forms.ToolStripMenuItem($"Drag a file, then hold {_settings.TriggerKey}") { Enabled = false, Tag = MenuRenderer.HeaderTag });
         menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add(Item("Open Droppo", () => HomeRequested?.Invoke()));
         menu.Items.Add(Item("Open PDF Studio", () => StudioRequested?.Invoke()));
         menu.Items.Add(Item("Test the wheel", () => TestWheelRequested?.Invoke()));
         menu.Items.Add(Item("Settings", () => SettingsRequested?.Invoke()));
@@ -134,9 +136,9 @@ internal sealed class Tray : IDisposable
     private sealed class MenuRenderer : Forms.ToolStripProfessionalRenderer
     {
         public const string HeaderTag = "header", TitleTag = "title";
-        private static readonly Drawing.Color Navy = Drawing.Color.FromArgb(0x1C, 0x2C, 0x49);
-        private static readonly Drawing.Color Slate = Drawing.Color.FromArgb(0x65, 0x70, 0x87);
-        private static readonly Drawing.Color Highlight = Drawing.Color.FromArgb(0xEE, 0xF3, 0xFD);
+        private static readonly Drawing.Color Navy = Drawing.Color.FromArgb(0x0F, 0x2D, 0x5B);
+        private static readonly Drawing.Color Slate = Drawing.Color.FromArgb(0x64, 0x74, 0x8B);
+        private static readonly Drawing.Color Highlight = Drawing.Color.FromArgb(0xE8, 0xF1, 0xFF);
         private static readonly Drawing.Color Edge = Drawing.Color.FromArgb(0xDD, 0xE3, 0xEE);
         private static readonly Drawing.Color Rule = Drawing.Color.FromArgb(0xE3, 0xE8, 0xF0);
 

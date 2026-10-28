@@ -143,7 +143,7 @@ internal sealed class StudioWindow : GlassWindow
         var emptyMark = new Border
         {
             Width = 88, Height = 88, CornerRadius = new CornerRadius(24), Background = Ui.AccentSoft,
-            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(46, Ui.Accent, 2.1),
+            HorizontalAlignment = HorizontalAlignment.Center, Child = Brand.Symbol(40, Ui.Accent),
         };
         emptyText.Children.Add(emptyMark);
         var emptyLine = Ui.Txt("Drop PDFs, images or Office files here", 17, bold: true);

@@ -8,7 +8,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type RepeatButton}">
                     <Grid Background="Transparent">
-                        <Border Height="4" CornerRadius="2" Background="#FF2857C5" VerticalAlignment="Center" />
+                        <Border Height="4" CornerRadius="2" Background="#FF3882F6" VerticalAlignment="Center" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -22,7 +22,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type RepeatButton}">
                     <Grid Background="Transparent">
-                        <Border Height="4" CornerRadius="2" Background="#FFD5DCE8" VerticalAlignment="Center" />
+                        <Border Height="4" CornerRadius="2" Background="#FFD6E2F3" VerticalAlignment="Center" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -35,13 +35,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Ellipse x:Name="Knob" Width="16" Height="16" Fill="#FFFFFFFF" Stroke="#FF2857C5" StrokeThickness="2" />
+                    <Ellipse x:Name="Knob" Width="16" Height="16" Fill="#FFFFFFFF" Stroke="#FF3882F6" StrokeThickness="2" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Knob" Property="Fill" Value="#FFDCE7FF" />
+                            <Setter TargetName="Knob" Property="Fill" Value="#FFE8F1FF" />
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="Knob" Property="Fill" Value="#FF2857C5" />
+                            <Setter TargetName="Knob" Property="Fill" Value="#FF3882F6" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

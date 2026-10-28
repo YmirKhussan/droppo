@@ -34,6 +34,7 @@ public partial class App : Application
     private WheelWindow? _wheel;
     private DragWatcher? _watcher;
     private Toast? _toast;
+    private HomeWindow? _home;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -57,7 +58,7 @@ public partial class App : Application
         }
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSettingsEvent);
         _showWait = ThreadPool.RegisterWaitForSingleObject(_showSignal,
-            (_, _) => Dispatcher.BeginInvoke(new Action(ShowSettings)), null, Timeout.Infinite, executeOnlyOnce: false);
+            (_, _) => Dispatcher.BeginInvoke(new Action(() => ShowHome())), null, Timeout.Infinite, executeOnlyOnce: false);
 
         DispatcherUnhandledException += OnUnhandled;
         Forms.Application.EnableVisualStyles();
@@ -98,6 +99,7 @@ public partial class App : Application
         tray.TestWheelRequested += ShowTestWheel;
         tray.StudioRequested += () => OpenStudio(Array.Empty<string>());
         tray.SettingsRequested += ShowSettings;
+        tray.HomeRequested += () => ShowHome();
         _tray = tray;
 
         var watcher = new DragWatcher { TriggerKey = () => NativeMethods.VirtualKeyFor(_settings.TriggerKey) };
@@ -117,6 +119,7 @@ public partial class App : Application
         {
             _settings.WelcomeShown = true;
             _settings.Save();
+            ShowHome();
             WelcomeWindow.Show(_settings.TriggerKey, ShowTestWheel);
         }
         else if (_ffmpeg == null || _qpdf == null)
@@ -127,9 +130,27 @@ public partial class App : Application
         }
         else if (!atStartup)
         {
-            // opened by hand: say it's there. Starting with Windows stays quiet.
-            ShowToast(ToastKind.Info, "Droppo is ready", $"Drag any file, then hold {_settings.TriggerKey}.");
+            // opened by hand: show the main window. Starting with Windows stays quiet in the tray.
+            ShowHome();
         }
+    }
+
+    /// <summary>The main window (one at a time); brings it forward if it's already open.</summary>
+    private void ShowHome(IReadOnlyList<string>? files = null)
+    {
+        if (_home == null)
+        {
+            var home = new HomeWindow(() => _settings);
+            home.ActionChosen += OnActionChosen;
+            home.StudioRequested += () => OpenStudio(Array.Empty<string>());
+            home.SettingsRequested += ShowSettings;
+            home.Closed += (_, _) => _home = null;
+            _home = home;
+            home.Show();
+        }
+        if (_home.WindowState == WindowState.Minimized) _home.WindowState = WindowState.Normal;
+        _home.Activate();
+        if (files != null) _home.ShowFiles(files);
     }
 
     private SettingsWindow? _settingsWindow;
@@ -272,8 +293,8 @@ public partial class App : Application
             return;
         }
 
-        string saved = result.Outputs.Count == 1 ? Path.GetFileName(first!.TrimEnd('\\', '/')) : $"{result.Outputs.Count} files saved";
-        ShowToast(ToastKind.Done, "All done.", string.IsNullOrEmpty(notes) ? saved : saved + "\n" + notes,
+        string saved = result.Outputs.Count == 1 ? $"Your file is ready: {Path.GetFileName(first!.TrimEnd('\\', '/'))}" : $"{result.Outputs.Count} files are ready.";
+        ShowToast(ToastKind.Done, "All done!", string.IsNullOrEmpty(notes) ? saved : saved + "\n" + notes,
                   reveal: first, open: result.Outputs.Count == 1 && File.Exists(first) ? first : null);
     }
 

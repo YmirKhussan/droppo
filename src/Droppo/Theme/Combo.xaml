@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style TargetType="{x:Type ComboBoxItem}">
-        <Setter Property="Foreground" Value="#FF1C2C49" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
         <Setter Property="Padding" Value="8,5" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -15,10 +15,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#FFEEF3FD" />
+                            <Setter TargetName="Bd" Property="Background" Value="#FFF0F6FF" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#FFDCE7FF" />
+                            <Setter TargetName="Bd" Property="Background" Value="#FFE8F1FF" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45" />
@@ -30,9 +30,9 @@
     </Style>
 
     <Style TargetType="{x:Type ComboBox}">
-        <Setter Property="Foreground" Value="#FF1C2C49" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
         <Setter Property="Background" Value="#FFFFFFFF" />
-        <Setter Property="BorderBrush" Value="#FFD5DCE8" />
+        <Setter Property="BorderBrush" Value="#FFD6E2F3" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="10,0,28,0" />
         <Setter Property="Cursor" Value="Hand" />
@@ -61,16 +61,16 @@
                                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
                                         <Path x:Name="Arrow" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,1,11,0"
-                                              Data="M0,0 L4,4 L8,0" Stroke="#FF657087" StrokeThickness="1.6"
+                                              Data="M0,0 L4,4 L8,0" Stroke="#FF64748B" StrokeThickness="1.6"
                                               StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFAFC0E0" />
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFA9C6F2" />
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF2857C5" />
-                                            <Setter TargetName="Arrow" Property="Stroke" Value="#FF2857C5" />
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF3882F6" />
+                                            <Setter TargetName="Arrow" Property="Stroke" Value="#FF3882F6" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -83,11 +83,11 @@
                                           HorizontalAlignment="Left" VerticalAlignment="Center" />
                         <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"
                                IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                            <Border Margin="0,4,10,10" Background="#FFFFFFFF" BorderBrush="#FFDDE3EE" BorderThickness="1" CornerRadius="8" Padding="4"
+                            <Border Margin="0,4,10,10" Background="#FFFFFFFF" BorderBrush="#FFDCE6F4" BorderThickness="1" CornerRadius="8" Padding="4"
                                     MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.16" Color="#FF1C2C49" />
+                                    <DropShadowEffect BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.16" Color="#FF0F2D5B" />
                                 </Border.Effect>
                                 <ScrollViewer SnapsToDevicePixels="True" CanContentScroll="True">
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />

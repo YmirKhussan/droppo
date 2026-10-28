@@ -35,9 +35,15 @@ internal class GlassWindow : Window
     private bool _wrapping;
     private TextBlock? _maxGlyph;
 
-    public GlassWindow(bool card = false)
+    private readonly bool _overlay;
+
+    /// <param name="card">Put the content on one frosted card (dialogs).</param>
+    /// <param name="overlayCaption">No title row: the content fills the window and the window buttons float top-right
+    /// (the main window, whose sidebar carries the logo).</param>
+    public GlassWindow(bool card = false, bool overlayCaption = false)
     {
         _card = card;
+        _overlay = overlayCaption;
         Background = Glass.WindowBackground;
         Foreground = Ui.Text;
         FontFamily = Ui.Body;
@@ -73,6 +79,15 @@ internal class GlassWindow : Window
     private Border Frame(UIElement body)
     {
         var root = new Grid();
+        if (_overlay)
+        {
+            root.Children.Add(body);
+            _buttons.VerticalAlignment = VerticalAlignment.Top;
+            Panel.SetZIndex(_buttons, 10);
+            root.Children.Add(_buttons);
+            _body = body;
+            return _frame = new Border { Child = root, BorderThickness = new Thickness(1), BorderBrush = Glass.Enabled ? Brand.Brush(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)) : Ui.Line };
+        }
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
@@ -90,8 +105,8 @@ internal class GlassWindow : Window
         UIElement inner = body;
         if (_card)
         {
-            var card = Glass.Card(body, new Thickness(0), 18);
-            card.Margin = new Thickness(14, 0, 14, 14);
+            var card = Glass.Card(body, new Thickness(0), 16);
+            card.Margin = new Thickness(18, 0, 18, 22); // room for the soft shadow
             inner = card;
         }
         Grid.SetRow(inner, 1);
@@ -142,7 +157,7 @@ internal class GlassWindow : Window
         glyphBlock = text;
         var button = new Border { Width = 46, Height = CaptionHeight, Background = Brushes.Transparent, Child = text, ToolTip = tip };
         WindowChrome.SetIsHitTestVisibleInChrome(button, true);
-        var hover = danger ? Brand.Brush(Color.FromRgb(0xC4, 0x2B, 0x1C)) : Brand.Brush(Color.FromArgb(0x1A, 0x1C, 0x2C, 0x49));
+        var hover = danger ? Brand.Brush(Color.FromRgb(0xC4, 0x2B, 0x1C)) : Brand.Brush(Color.FromArgb(0x14, 0x0F, 0x2D, 0x5B));
         button.MouseEnter += (_, _) => { button.Background = hover; if (danger) text.Foreground = Brushes.White; };
         button.MouseLeave += (_, _) => { button.Background = Brushes.Transparent; text.Foreground = Ui.Text; };
         button.MouseLeftButtonUp += (_, e) => { e.Handled = true; click(); };

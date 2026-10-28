@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style TargetType="{x:Type CheckBox}">
-        <Setter Property="Foreground" Value="#FF1C2C49" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -14,7 +14,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border x:Name="Box" Width="18" Height="18" CornerRadius="5" Background="#FFFFFFFF"
-                                BorderBrush="#FFB9C3D6" BorderThickness="1.5" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                BorderBrush="#FFB8C7DD" BorderThickness="1.5" VerticalAlignment="Center" SnapsToDevicePixels="True">
                             <Path x:Name="Tick" Data="M2.5,7.5 L6,11 L12.5,4" Stroke="#FFFFFFFF" StrokeThickness="2"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Opacity="0" />
                         </Border>
@@ -22,11 +22,11 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Box" Property="BorderBrush" Value="#FF2857C5" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="#FF3882F6" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Box" Property="Background" Value="#FF2857C5" />
-                            <Setter TargetName="Box" Property="BorderBrush" Value="#FF2857C5" />
+                            <Setter TargetName="Box" Property="Background" Value="#FF3882F6" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="#FF3882F6" />
                             <Setter TargetName="Tick" Property="Opacity" Value="1" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -39,7 +39,7 @@
     </Style>
 
     <Style TargetType="{x:Type RadioButton}">
-        <Setter Property="Foreground" Value="#FF1C2C49" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -51,18 +51,18 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid Width="18" Height="18" VerticalAlignment="Center">
-                            <Ellipse x:Name="Ring" Fill="#FFFFFFFF" Stroke="#FFB9C3D6" StrokeThickness="1.5" />
+                            <Ellipse x:Name="Ring" Fill="#FFFFFFFF" Stroke="#FFB8C7DD" StrokeThickness="1.5" />
                             <Ellipse x:Name="Dot" Width="7" Height="7" Fill="#FFFFFFFF" Opacity="0" />
                         </Grid>
                         <ContentPresenter Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Ring" Property="Stroke" Value="#FF2857C5" />
+                            <Setter TargetName="Ring" Property="Stroke" Value="#FF3882F6" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Ring" Property="Fill" Value="#FF2857C5" />
-                            <Setter TargetName="Ring" Property="Stroke" Value="#FF2857C5" />
+                            <Setter TargetName="Ring" Property="Fill" Value="#FF3882F6" />
+                            <Setter TargetName="Ring" Property="Stroke" Value="#FF3882F6" />
                             <Setter TargetName="Dot" Property="Opacity" Value="1" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">

@@ -4,8 +4,8 @@
          hover darkens with a thin navy layer, press shrinks a touch. -->
     <Style TargetType="{x:Type Button}">
         <Setter Property="Background" Value="#FFFFFFFF" />
-        <Setter Property="Foreground" Value="#FF1C2C49" />
-        <Setter Property="BorderBrush" Value="#FFDDE3EE" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
+        <Setter Property="BorderBrush" Value="#FFDCE6F4" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,6" />
         <Setter Property="Cursor" Value="Hand" />
@@ -22,7 +22,7 @@
                         </Grid.RenderTransform>
                         <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" />
-                        <Border x:Name="Hover" Background="#FF1C2C49" Opacity="0" CornerRadius="8" />
+                        <Border x:Name="Hover" Background="#FF0F2D5B" Opacity="0" CornerRadius="8" />
                         <ContentPresenter Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />

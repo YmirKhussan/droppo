@@ -3,12 +3,12 @@
 
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Background" Value="#FFFFFFFF" />
-        <Setter Property="Foreground" Value="#FF1C2C49" />
-        <Setter Property="BorderBrush" Value="#FFD5DCE8" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
+        <Setter Property="BorderBrush" Value="#FFD6E2F3" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="6,0" />
-        <Setter Property="CaretBrush" Value="#FF1C2C49" />
-        <Setter Property="SelectionBrush" Value="#FF2857C5" />
+        <Setter Property="CaretBrush" Value="#FF0F2D5B" />
+        <Setter Property="SelectionBrush" Value="#FF3882F6" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Template">
@@ -22,10 +22,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFAFC0E0" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFA9C6F2" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF2857C5" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF3882F6" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Opacity" Value="0.5" />
@@ -38,12 +38,12 @@
 
     <Style TargetType="{x:Type PasswordBox}">
         <Setter Property="Background" Value="#FFFFFFFF" />
-        <Setter Property="Foreground" Value="#FF1C2C49" />
-        <Setter Property="BorderBrush" Value="#FFD5DCE8" />
+        <Setter Property="Foreground" Value="#FF0F2D5B" />
+        <Setter Property="BorderBrush" Value="#FFD6E2F3" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="6,0" />
-        <Setter Property="CaretBrush" Value="#FF1C2C49" />
-        <Setter Property="SelectionBrush" Value="#FF2857C5" />
+        <Setter Property="CaretBrush" Value="#FF0F2D5B" />
+        <Setter Property="SelectionBrush" Value="#FF3882F6" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -56,10 +56,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFAFC0E0" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFA9C6F2" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF2857C5" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FF3882F6" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

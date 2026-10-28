@@ -72,16 +72,15 @@ internal static class Glass
         }
     }
 
-    private static readonly Brush CardFill = Gradient(0xD1, 0x99);      // frosted white, brighter top-left
-    private static readonly Brush CardEdge = Gradient(0xF2, 0x66);      // bright edge catching the light
-    private static readonly Brush BarFill = Gradient(0xA6, 0x80);
+    private static readonly Brush CardFill = Gradient(Color.FromArgb(0xF2, 0xFF, 0xFF, 0xFF), Color.FromArgb(0xE0, 0xFF, 0xFF, 0xFF));  // frosted white
+    private static readonly Brush CardEdge = Gradient(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF), Color.FromArgb(0xB3, 0xD4, 0xE3, 0xF7));  // light catching the top-left edge
+    private static readonly Brush BarFill = Gradient(Color.FromArgb(0xA6, 0xFF, 0xFF, 0xFF), Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
     private static readonly Brush SolidWhite = Brand.Brush(Colors.White);
-    private static readonly Brush FlatEdge = Brand.Brush(Color.FromArgb(0x26, 0x1C, 0x2C, 0x49));
+    private static readonly Brush FlatEdge = Brand.Brush(Color.FromArgb(0x24, 0x0F, 0x2D, 0x5B));
 
-    /// <summary>White going from <paramref name="topLeft"/> to <paramref name="bottomRight"/> opacity.</summary>
-    private static Brush Gradient(byte topLeft, byte bottomRight)
+    private static Brush Gradient(Color topLeft, Color bottomRight)
     {
-        var b = new LinearGradientBrush(Color.FromArgb(topLeft, 0xFF, 0xFF, 0xFF), Color.FromArgb(bottomRight, 0xFF, 0xFF, 0xFF), new Point(0, 0), new Point(1, 1));
+        var b = new LinearGradientBrush(topLeft, bottomRight, new Point(0, 0), new Point(1, 1));
         b.Freeze();
         return b;
     }
@@ -90,11 +89,18 @@ internal static class Glass
     public static Brush CardBorder => Enabled ? CardEdge : FlatEdge;
     public static Brush BarBackground => Enabled ? BarFill : SolidWhite;
 
-    /// <summary>A frosted glass card around <paramref name="child"/>.</summary>
-    public static System.Windows.Controls.Border Card(UIElement child, Thickness? padding = null, double radius = 16) => new()
+    /// <summary>A frosted glass card around <paramref name="child"/>, lifted off the page by a soft shadow.</summary>
+    public static System.Windows.Controls.Border Card(UIElement child, Thickness? padding = null, double radius = 14, bool shadow = true) => new()
     {
         Child = child, Background = CardBackground, BorderBrush = CardBorder, BorderThickness = new Thickness(1),
         CornerRadius = new CornerRadius(radius), Padding = padding ?? new Thickness(18, 16, 18, 16), SnapsToDevicePixels = true,
+        Effect = shadow ? SoftShadow() : null,
+    };
+
+    /// <summary>The board's soft, wide, barely-there shadow.</summary>
+    public static System.Windows.Media.Effects.DropShadowEffect SoftShadow(double opacity = 0.08) => new()
+    {
+        BlurRadius = 26, ShadowDepth = 5, Direction = 270, Opacity = opacity, Color = Brand.Navy, RenderingBias = System.Windows.Media.Effects.RenderingBias.Performance,
     };
 
     // ---------- real blur of the desktop behind small windows ----------
@@ -152,7 +158,7 @@ internal static class Glass
     }
 
     /// <summary>How much white to lay over the blurred desktop so navy text stays readable (more on dark desktops).</summary>
-    public static double TintFor(double brightness) => brightness < 0.3 ? 0.66 : brightness < 0.55 ? 0.56 : 0.48;
+    public static double TintFor(double brightness) => brightness < 0.3 ? 0.8 : brightness < 0.55 ? 0.72 : 0.64;
 
     // ---------- window corners ----------
 

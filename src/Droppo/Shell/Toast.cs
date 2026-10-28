@@ -24,20 +24,27 @@ internal enum ToastKind { Working, Done, Error, Info, Copied }
 internal sealed class Toast : Window
 {
     private const double CardWidth = 360;
+    private const double Gap = 20; // around the card, room for its soft shadow
 
     private readonly Border _card;
+    // casts the soft shadow; hidden under the card (the blurred screen picture covers it)
+    private readonly Border _shadow = new()
+    {
+        CornerRadius = new CornerRadius(16), Background = Brushes.White, IsHitTestVisible = false,
+        HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Effect = Glass.SoftShadow(0.16),
+    };
     // a Canvas so the (taller) screen picture never makes the card taller
     private readonly Canvas _behind = new() { IsHitTestVisible = false, ClipToBounds = true, VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left };
     private const double BehindHeight = 230; // screen strip grabbed behind the card (taller than any card)
     private static readonly Brush PlainCard = MakeCardFill(0.97, 0.93);
-    private readonly Border _icon = new() { Width = 36, Height = 36, CornerRadius = new CornerRadius(18), VerticalAlignment = VerticalAlignment.Top };
-    private readonly TextBlock _title = new() { FontSize = 14, FontWeight = FontWeights.SemiBold, Foreground = Ui.Text, TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly Border _icon = new() { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), VerticalAlignment = VerticalAlignment.Top };
+    private readonly TextBlock _title = new() { FontSize = 14.5, FontWeight = FontWeights.SemiBold, Foreground = Ui.Text, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly TextBlock _body = new()
     {
         FontSize = 12.5, Foreground = Ui.Muted, TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis,
         MaxHeight = 52, Margin = new Thickness(0, 2, 0, 0),
     };
-    private readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(-8, 6, 0, 0) };
+    private readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
     private readonly Border _progress;
     private readonly TranslateTransform _progressShift = new();
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(5) };
@@ -46,7 +53,7 @@ internal sealed class Toast : Window
     public Toast()
     {
         Title = "Droppo";
-        Width = CardWidth + 24;
+        Width = CardWidth + Gap * 2;
         SizeToContent = SizeToContent.Height;
         WindowStyle = WindowStyle.None;
         AllowsTransparency = true;
@@ -66,15 +73,15 @@ internal sealed class Toast : Window
         };
         close.Click += (_, _) => Dismiss();
 
-        var texts = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
+        var texts = new StackPanel { Margin = new Thickness(14, 1, 0, 0) };
         texts.Children.Add(_title);
         texts.Children.Add(_body);
         texts.Children.Add(_buttons);
 
-        var track = new Border { Height = 3, CornerRadius = new CornerRadius(1.5), Background = Ui.AccentSoft, ClipToBounds = true, Margin = new Thickness(0, 8, 0, 2) };
+        var track = new Border { Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.AccentSoft, ClipToBounds = true, Margin = new Thickness(0, 12, 4, 2) };
         track.Child = new Border
         {
-            Width = 90, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(1.5),
+            Width = 110, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(3),
             Background = Ui.Accent, RenderTransform = _progressShift,
         };
         _progress = track;
@@ -93,15 +100,17 @@ internal sealed class Toast : Window
         // frosted card: blurred screen behind, milky white over it, a bright edge
         _card = new Border
         {
-            Child = grid, Width = CardWidth, Padding = new Thickness(16, 14, 14, 14),
-            CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1),
+            Child = grid, Width = CardWidth, Padding = new Thickness(16, 16, 14, 16),
+            CornerRadius = new CornerRadius(16), BorderThickness = new Thickness(1),
             BorderBrush = Glass.Enabled ? Glass.CardBorder : Ui.Line, Background = PlainCard, Cursor = Cursors.Hand,
         };
         _card.SizeChanged += (_, _) =>
         {
             _behind.Width = _card.ActualWidth;
             _behind.Height = _card.ActualHeight;
-            _behind.Clip = new RectangleGeometry(new Rect(0, 0, _card.ActualWidth, _card.ActualHeight), 14, 14);
+            _behind.Clip = new RectangleGeometry(new Rect(0, 0, _card.ActualWidth, _card.ActualHeight), 16, 16);
+            _shadow.Width = _card.ActualWidth;
+            _shadow.Height = _card.ActualHeight;
             // the picture lines up with the card's bottom edge (that's where it was taken from)
             foreach (UIElement child in _behind.Children) Canvas.SetTop(child, _card.ActualHeight - BehindHeight);
         };
@@ -113,14 +122,15 @@ internal sealed class Toast : Window
         };
         _card.MouseEnter += (_, _) => _timer.Stop();
         _card.MouseLeave += (_, _) => { if (_title.Tag is not ToastKind.Working) _timer.Start(); };
-        var root = new Grid { Margin = new Thickness(12) };
+        var root = new Grid { Margin = new Thickness(Gap) };
+        root.Children.Add(_shadow);
         root.Children.Add(_behind);
         root.Children.Add(_card);
         // hairline so the card still has an edge on a white screen
         root.Children.Add(new Border
         {
-            CornerRadius = new CornerRadius(15), Margin = new Thickness(-1), BorderThickness = new Thickness(1), IsHitTestVisible = false,
-            BorderBrush = Brand.Brush(Color.FromArgb(0x24, 0x1C, 0x2C, 0x49)),
+            CornerRadius = new CornerRadius(17), Margin = new Thickness(-1), BorderThickness = new Thickness(1), IsHitTestVisible = false,
+            BorderBrush = Brand.Brush(Color.FromArgb(0x1C, 0x0F, 0x2D, 0x5B)),
         });
         Content = root;
 
@@ -154,9 +164,11 @@ internal sealed class Toast : Window
         SetIcon(kind);
 
         _buttons.Children.Clear();
-        if (reveal != null) _buttons.Children.Add(LinkButton("Show in folder", () => Tray.Reveal(reveal)));
-        if (open != null && File.Exists(open)) _buttons.Children.Add(LinkButton("Open", () => OpenFile(open)));
-        if (extra is { } x) _buttons.Children.Add(LinkButton(x.Label, x.Run));
+        // like the board: one filled button for the main thing, a quiet one beside it
+        bool canOpen = open != null && File.Exists(open);
+        if (canOpen) _buttons.Children.Add(PillButton("Open file", () => { OpenFile(open!); Dismiss(); }, primary: true));
+        if (reveal != null) _buttons.Children.Add(PillButton("Show in folder", () => { Tray.Reveal(reveal); Dismiss(); }, primary: !canOpen));
+        if (extra is { } x) _buttons.Children.Add(PillButton(x.Label, x.Run, primary: _buttons.Children.Count == 0));
         _buttons.Visibility = _buttons.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         bool working = kind == ToastKind.Working;
@@ -198,7 +210,7 @@ internal sealed class Toast : Window
             var area = SystemParameters.WorkArea;
             if (screen == null || area.Width <= 0) return;
             double scale = screen.WorkingArea.Width / area.Width;
-            double right = area.Right - 4 - 12, bottom = area.Bottom - 4 - 12;
+            double right = area.Right - 4 - Gap, bottom = area.Bottom - 4 - Gap;
             int x = (int)Math.Round((right - CardWidth) * scale), y = (int)Math.Round((bottom - BehindHeight) * scale);
             var captured = Glass.CaptureBehind(x, y, (int)Math.Round(CardWidth * scale), (int)Math.Round(BehindHeight * scale));
             if (captured is not { } c) return;
@@ -239,43 +251,45 @@ internal sealed class Toast : Window
 
     private void SetIcon(ToastKind kind)
     {
-        Brush bg; FrameworkElement mark;
+        Brush bg; FrameworkElement mark; double radius = 20;
         switch (kind)
         {
             case ToastKind.Done:
-                bg = Ui.Accent;
+                bg = Ui.Success;
                 mark = new WpfPath
                 {
-                    Data = Geometry.Parse("M0,5 L4.5,9.5 L13,1"), Stroke = Brushes.White, StrokeThickness = 2.2,
+                    Data = Geometry.Parse("M0,5 L4.5,9.5 L13,1"), Stroke = Brushes.White, StrokeThickness = 2.4,
                     StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round,
                 };
                 break;
             case ToastKind.Error:
                 bg = Ui.Danger;
-                mark = new TextBlock { Text = "!", FontSize = 18, FontWeight = FontWeights.Bold, Foreground = Brushes.White };
+                mark = new TextBlock { Text = "!", FontSize = 19, FontWeight = FontWeights.Bold, Foreground = Brushes.White };
                 break;
             case ToastKind.Copied:
-                bg = Ui.Accent;
-                mark = new TextBlock { Text = Ui.Glyph.Copy, FontFamily = Ui.Icons, FontSize = 15, Foreground = Brushes.White };
+                bg = Ui.Success;
+                mark = new TextBlock { Text = Ui.Glyph.Copy, FontFamily = Ui.Icons, FontSize = 16, Foreground = Brushes.White };
                 break;
-            default:
+            default: // working / info: the Droppo mark on an ice-blue tile
                 bg = Ui.AccentSoft;
-                mark = Brand.Symbol(20, Ui.Accent, 2.4);
+                radius = 12;
+                mark = Brand.Symbol(20, Ui.Accent);
                 break;
         }
         mark.HorizontalAlignment = HorizontalAlignment.Center;
         mark.VerticalAlignment = VerticalAlignment.Center;
         _icon.Background = bg;
+        _icon.CornerRadius = new CornerRadius(radius);
         _icon.Child = mark;
     }
 
-    private static Button LinkButton(string label, Action run)
+    private static Button PillButton(string label, Action run, bool primary)
     {
         var b = new Button
         {
-            Content = label, FontSize = 12.5, FontWeight = FontWeights.SemiBold, Foreground = Ui.Accent,
-            Background = Brushes.Transparent, BorderBrush = Brushes.Transparent, Padding = new Thickness(8, 4, 8, 4),
-            Margin = new Thickness(0, 0, 2, 0),
+            Content = label, FontSize = 12.5, FontWeight = FontWeights.SemiBold,
+            Foreground = primary ? Brushes.White : Ui.Accent, Background = primary ? Ui.Accent : Ui.AccentSoft,
+            BorderBrush = primary ? Ui.Accent : Ui.AccentSoft, Padding = new Thickness(16, 6, 16, 7), Margin = new Thickness(0, 0, 8, 0),
         };
         b.Click += (_, _) => run();
         return b;

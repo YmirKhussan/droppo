@@ -7,31 +7,30 @@ namespace Droppo.Shell;
 
 /// <summary>
 /// Droppo's colours and logo, drawn as vectors so they stay sharp at any size or scaling.
-/// The same shapes are in the brand folder as SVG (brand/droppo-symbol.svg, droppo-wordmark.svg).
+/// The same shapes are in the brand folder as SVG (brand/droppo-icon.svg, droppo-symbol.svg, droppo-wordmark.svg).
 /// </summary>
 internal static class Brand
 {
-    public static readonly Color Cobalt = Color.FromRgb(0x28, 0x57, 0xC5);
-    public static readonly Color CobaltDark = Color.FromRgb(0x1F, 0x46, 0xA3);
-    public static readonly Color Navy = Color.FromRgb(0x1C, 0x2C, 0x49);
-    public static readonly Color Cloud = Color.FromRgb(0xF4, 0xF6, 0xFA);
-    public static readonly Color Slate = Color.FromRgb(0x65, 0x70, 0x87);
-    public static readonly Color PaleBlue = Color.FromRgb(0xDC, 0xE7, 0xFF);
+    public static readonly Color Cobalt = Color.FromRgb(0x38, 0x82, 0xF6);      // Cobalt Blue: actions, highlights
+    public static readonly Color CobaltDeep = Color.FromRgb(0x24, 0x59, 0xD9);
+    public static readonly Color CobaltLight = Color.FromRgb(0x5D, 0xB0, 0xFF);
+    public static readonly Color Navy = Color.FromRgb(0x0F, 0x2D, 0x5B);        // Deep Navy: text, headings
+    public static readonly Color Ice = Color.FromRgb(0xE8, 0xF1, 0xFF);         // Ice Blue: hover, selected
+    public static readonly Color Slate = Color.FromRgb(0x64, 0x74, 0x8B);       // Slate Grey: secondary text
+    public static readonly Color Cloud = Color.FromRgb(0xF4, 0xF7, 0xFC);
+    public static readonly Color Success = Color.FromRgb(0x22, 0xB5, 0x73);
 
     public const string Tagline = "Drop it. Done.";
 
-    // the mark on a 24-unit grid: a document whose outline opens into an arrow
-    private const string SymbolData =
-        "M8.5,9.5 V5.75 A2.75,2.75 0 0 1 11.25,3 H14.6 L19.75,8.15 V18.25 A2.75,2.75 0 0 1 17,21 H11.25 " +
-        "A2.75,2.75 0 0 1 8.5,18.25 V16.5 M14.6,3 V6.15 A2,2 0 0 0 16.6,8.15 H19.75 " +
-        "M6.75,10.25 L4,13 L6.75,15.75 M4,13 H14.5";
+    // the mark on a 24-unit grid: a bold "D" with an arrow cut through it, pointing right
+    private const string GlyphData = "M7.58,4.61 L7.37,4.64 L7.16,4.69 L6.96,4.77 L6.76,4.86 L6.58,4.97 L6.4,5.1 L6.24,5.24 L6.1,5.4 L5.97,5.58 L5.86,5.76 L5.77,5.96 L5.69,6.16 L5.64,6.37 L5.61,6.58 L5.6,6.8 L5.6,10.35 L9.6,10.35 L9.6,9.55 L9.67,9.29 L9.76,9.13 L9.94,8.94 L10.17,8.8 L10.43,8.74 L10.69,8.76 L10.86,8.82 L11.02,8.9 L14.43,11.32 L14.61,11.53 L14.69,11.69 L14.74,11.95 L14.73,12.14 L14.69,12.31 L14.61,12.47 L14.5,12.62 L14.36,12.73 L11.02,15.1 L10.78,15.22 L10.61,15.26 L10.43,15.26 L10.17,15.2 L9.94,15.06 L9.76,14.87 L9.67,14.71 L9.6,14.45 L9.6,13.65 L5.6,13.65 L5.61,17.42 L5.64,17.63 L5.69,17.84 L5.77,18.04 L5.86,18.24 L5.97,18.42 L6.1,18.6 L6.24,18.76 L6.4,18.9 L6.58,19.03 L6.76,19.14 L6.96,19.23 L7.16,19.31 L7.37,19.36 L7.58,19.39 L7.8,19.4 L12.23,19.4 L12.64,19.39 L13.3,19.32 L13.68,19.25 L14.17,19.13 L14.8,18.93 L15.26,18.74 L15.85,18.44 L16.18,18.24 L16.5,18.02 L16.81,17.79 L17.11,17.54 L17.39,17.27 L17.66,16.99 L17.91,16.7 L18.22,16.3 L18.44,15.98 L18.64,15.65 L18.94,15.06 L19.09,14.71 L19.22,14.34 L19.33,13.97 L19.42,13.59 L19.5,13.21 L19.55,12.83 L19.59,12.44 L19.6,12.06 L19.59,11.67 L19.56,11.28 L19.5,10.79 L19.36,10.14 L19.25,9.77 L19.13,9.4 L18.98,9.04 L18.82,8.69 L18.64,8.35 L18.44,8.02 L18.15,7.6 L17.91,7.3 L17.66,7.01 L17.19,6.54 L16.81,6.21 L16.28,5.83 L15.95,5.62 L15.61,5.43 L15.26,5.26 L14.91,5.11 L14.43,4.95 L13.79,4.78 L13.41,4.7 L13.03,4.65 L12.53,4.61 L7.8,4.6 Z";
 
-    // "droppo" set in Nunito ExtraBold, tightened, outlined. 3262 x 902 units; top of the "d" at y = 0, baseline at 713.
-    private const string WordmarkData = "F1 M 215,724 Q 151,724 102.5,693 Q 54,662 27,604 Q 0,546 0,467 Q 0,388 27,331 Q 54,274 102.5,243 Q 151,212 215,212 Q 273,212 318,240 Q 350,260 367,289 V 76 Q 367,38 386,18.5 Q 405,-1 442,-1 Q 478,-1 498,18.5 Q 518,38 518,76 V 645 Q 518,682 498.5,702 Q 479,722 443,722 Q 407,722 387.5,702 Q 368,682 368,645 V 643 Q 352,674 320,694 Q 274,724 215,724 Z M 260,611 Q 293,611 317,595 Q 341,579 355,547.5 Q 369,516 369,467 Q 369,394 339,359.5 Q 309,325 260,325 Q 228,325 203.5,340 Q 179,355 165.5,386.5 Q 152,418 152,467 Q 152,540 182,575.5 Q 212,611 260,611 Z M 694,722 Q 656,722 636,702 Q 616,682 616,645 V 290 Q 616,253 635.5,233.5 Q 655,214 690,214 Q 726,214 745,233.5 Q 764,253 764,290 V 308 Q 778,272 807,249 Q 848,216 913,212 Q 938,210 951.5,224.5 Q 965,239 966,272 Q 968,303 953.5,321 Q 939,339 905,343 L 882,345 Q 825,350 797.5,378 Q 770,406 770,459 V 645 Q 770,682 750.5,702 Q 731,722 694,722 Z M 1246,724 Q 1167,724 1108.5,693 Q 1050,662 1018,604 Q 986,546 986,467 Q 986,408 1004,361 Q 1022,314 1056.5,280.5 Q 1091,247 1139,229.5 Q 1187,212 1246,212 Q 1325,212 1383.5,243 Q 1442,274 1474.5,331 Q 1507,388 1507,467 Q 1507,527 1488.5,574 Q 1470,621 1436,655 Q 1402,689 1353.5,706.5 Q 1305,724 1246,724 Z M 1246,611 Q 1279,611 1303,595 Q 1327,579 1341,547.5 Q 1355,516 1355,467 Q 1355,394 1325,359.5 Q 1295,325 1246,325 Q 1214,325 1189.5,340 Q 1165,355 1151.5,386.5 Q 1138,418 1138,467 Q 1138,540 1168,575.5 Q 1198,611 1246,611 Z M 1657,902 Q 1620,902 1600.5,882.5 Q 1581,863 1581,825 V 290 Q 1581,253 1600.5,233.5 Q 1620,214 1655,214 Q 1692,214 1711,233.5 Q 1730,253 1730,290 V 293 Q 1747,263 1780,241 Q 1825,212 1884,212 Q 1948,212 1996.5,243 Q 2045,274 2072,331 Q 2099,388 2099,467 Q 2099,546 2072,604 Q 2045,662 1997,693 Q 1949,724 1884,724 Q 1826,724 1781,695 Q 1749,675 1732,647 V 825 Q 1732,863 1712.5,882.5 Q 1693,902 1657,902 Z M 1839,611 Q 1871,611 1895.5,595 Q 1920,579 1933.5,547.5 Q 1947,516 1947,467 Q 1947,394 1917,359.5 Q 1887,325 1839,325 Q 1807,325 1782.5,340 Q 1758,355 1744,386.5 Q 1730,418 1730,467 Q 1730,540 1760,575.5 Q 1790,611 1839,611 Z M 2249,902 Q 2212,902 2192.5,882.5 Q 2173,863 2173,825 V 290 Q 2173,253 2192.5,233.5 Q 2212,214 2247,214 Q 2284,214 2303,233.5 Q 2322,253 2322,290 V 293 Q 2339,263 2372,241 Q 2417,212 2476,212 Q 2540,212 2588.5,243 Q 2637,274 2664,331 Q 2691,388 2691,467 Q 2691,546 2664,604 Q 2637,662 2589,693 Q 2541,724 2476,724 Q 2418,724 2373,695 Q 2341,675 2324,647 V 825 Q 2324,863 2304.5,882.5 Q 2285,902 2249,902 Z M 2431,611 Q 2463,611 2487.5,595 Q 2512,579 2525.5,547.5 Q 2539,516 2539,467 Q 2539,394 2509,359.5 Q 2479,325 2431,325 Q 2399,325 2374.5,340 Q 2350,355 2336,386.5 Q 2322,418 2322,467 Q 2322,540 2352,575.5 Q 2382,611 2431,611 Z M 3001,724 Q 2922,724 2863.5,693 Q 2805,662 2773,604 Q 2741,546 2741,467 Q 2741,408 2759,361 Q 2777,314 2811.5,280.5 Q 2846,247 2894,229.5 Q 2942,212 3001,212 Q 3080,212 3138.5,243 Q 3197,274 3229.5,331 Q 3262,388 3262,467 Q 3262,527 3243.5,574 Q 3225,621 3191,655 Q 3157,689 3108.5,706.5 Q 3060,724 3001,724 Z M 3001,611 Q 3034,611 3058,595 Q 3082,579 3096,547.5 Q 3110,516 3110,467 Q 3110,394 3080,359.5 Q 3050,325 3001,325 Q 2969,325 2944.5,340 Q 2920,355 2906.5,386.5 Q 2893,418 2893,467 Q 2893,540 2923,575.5 Q 2953,611 3001,611 Z";
-    private const double WordmarkWidth = 3262, WordmarkHeight = 902, WordmarkCap = 713;
+    // "droppo" set in Poppins Bold, tightened, outlined. 3572.0 x 1006.0 units; top of the "d" at y = 0, baseline at 740.0.
+    private const string WordmarkData = "F1 M 246,174 Q 301,174 346.5,197 Q 392,220 418,259 V 0 H 589 V 740 H 418 V 660 Q 394,700 349.5,724 Q 305,748 246,748 Q 177,748 121,712.5 Q 65,677 32.5,611.5 Q 0,546 0,460 Q 0,374 32.5,309 Q 65,244 121,209 Q 177,174 246,174 Z M 296,323 Q 245,323 209.5,359.5 Q 174,396 174,460 Q 174,524 209.5,561.5 Q 245,599 296,599 Q 347,599 382.5,562 Q 418,525 418,461 Q 418,397 382.5,360 Q 347,323 296,323 Z M 1037,176 V 357 H 990 Q 926,357 894,384.5 Q 862,412 862,481 V 740 H 691 V 182 H 862 V 275 Q 892,229 937,202.5 Q 982,176 1037,176 Z M 1063,461 Q 1063,375 1101,309.5 Q 1139,244 1205,209 Q 1271,174 1353,174 Q 1435,174 1501,209 Q 1567,244 1605,309.5 Q 1643,375 1643,461 Q 1643,547 1604.5,612.5 Q 1566,678 1499.5,713 Q 1433,748 1351,748 Q 1269,748 1203.5,713 Q 1138,678 1100.5,613 Q 1063,548 1063,461 Z M 1469,461 Q 1469,394 1435.5,358 Q 1402,322 1353,322 Q 1303,322 1270,357.5 Q 1237,393 1237,461 Q 1237,528 1269.5,564 Q 1302,600 1351,600 Q 1400,600 1434.5,564 Q 1469,528 1469,461 Z M 2055,174 Q 2124,174 2180,209 Q 2236,244 2268.5,309 Q 2301,374 2301,460 Q 2301,546 2268.5,611.5 Q 2236,677 2180,712.5 Q 2124,748 2055,748 Q 1997,748 1952.5,724 Q 1908,700 1883,662 V 1006 H 1712 V 182 H 1883 V 261 Q 1908,222 1952,198 Q 1996,174 2055,174 Z M 2004,323 Q 1953,323 1917.5,360 Q 1882,397 1882,461 Q 1882,525 1917.5,562 Q 1953,599 2004,599 Q 2055,599 2091,561.5 Q 2127,524 2127,460 Q 2127,396 2091.5,359.5 Q 2056,323 2004,323 Z M 2712,174 Q 2781,174 2837,209 Q 2893,244 2925.5,309 Q 2958,374 2958,460 Q 2958,546 2925.5,611.5 Q 2893,677 2837,712.5 Q 2781,748 2712,748 Q 2654,748 2609.5,724 Q 2565,700 2540,662 V 1006 H 2369 V 182 H 2540 V 261 Q 2565,222 2609,198 Q 2653,174 2712,174 Z M 2661,323 Q 2610,323 2574.5,360 Q 2539,397 2539,461 Q 2539,525 2574.5,562 Q 2610,599 2661,599 Q 2712,599 2748,561.5 Q 2784,524 2784,460 Q 2784,396 2748.5,359.5 Q 2713,323 2661,323 Z M 2992,461 Q 2992,375 3030,309.5 Q 3068,244 3134,209 Q 3200,174 3282,174 Q 3364,174 3430,209 Q 3496,244 3534,309.5 Q 3572,375 3572,461 Q 3572,547 3533.5,612.5 Q 3495,678 3428.5,713 Q 3362,748 3280,748 Q 3198,748 3132.5,713 Q 3067,678 3029.5,613 Q 2992,548 2992,461 Z M 3398,461 Q 3398,394 3364.5,358 Q 3331,322 3282,322 Q 3232,322 3199,357.5 Q 3166,393 3166,461 Q 3166,528 3198.5,564 Q 3231,600 3280,600 Q 3329,600 3363.5,564 Q 3398,528 3398,461 Z";
+    private const double WordmarkWidth = 3572.0, WordmarkHeight = 1006.0, WordmarkCap = 740.0;
 
-    private static Geometry? _symbol, _wordmark;
-    private static Geometry SymbolGeometry => _symbol ??= Frozen(Geometry.Parse(SymbolData));
+    private static Geometry? _glyph, _wordmark;
+    private static Geometry GlyphGeometry => _glyph ??= Frozen(Geometry.Parse(GlyphData));
     private static Geometry WordmarkGeometry => _wordmark ??= Frozen(Geometry.Parse(WordmarkData));
 
     private static Geometry Frozen(Geometry g) { g.Freeze(); return g; }
@@ -43,27 +42,41 @@ internal static class Brand
         return b;
     }
 
-    /// <summary>The mark alone, size x size DIPs.</summary>
-    public static FrameworkElement Symbol(double size, Brush color, double stroke = 2.25)
+    private static Brush? _tileFill, _gloss;
+
+    /// <summary>The icon's blue: light at the top-left, deeper at the bottom-right.</summary>
+    public static Brush TileFill => _tileFill ??= Freeze(new LinearGradientBrush(new GradientStopCollection
     {
-        var path = new WpfPath
-        {
-            Data = SymbolGeometry, Stroke = color, StrokeThickness = stroke, StrokeLineJoin = PenLineJoin.Round,
-            StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round,
-        };
-        var canvas = new Canvas { Width = 24, Height = 24 };
+        new GradientStop(CobaltLight, 0), new GradientStop(Cobalt, 0.55), new GradientStop(CobaltDeep, 1),
+    }, new Point(0, 0), new Point(1, 1)));
+
+    private static Brush Gloss => _gloss ??= Freeze(new LinearGradientBrush(Color.FromArgb(0x47, 0xFF, 0xFF, 0xFF), Color.FromArgb(0, 0xFF, 0xFF, 0xFF), new Point(0, 0), new Point(0, 0.5)));
+
+    private static Brush Freeze(Brush b) { b.Freeze(); return b; }
+
+    /// <summary>The mark alone (the "D" with the arrow), size x size DIPs.</summary>
+    public static FrameworkElement Symbol(double size, Brush color)
+    {
+        var path = new WpfPath { Data = GlyphGeometry, Fill = color };
+        var canvas = new Canvas { Width = 18, Height = 18 };
+        Canvas.SetLeft(path, -4); // the glyph's ink sits at 4..22 x 3..21 on its grid
+        Canvas.SetTop(path, -3);
         canvas.Children.Add(path);
         return new Viewbox { Width = size, Height = size, Child = canvas, Stretch = Stretch.Uniform };
     }
 
-    /// <summary>The app icon: white mark on a cobalt rounded square.</summary>
+    /// <summary>The app icon: white mark on the blue gradient tile.</summary>
     public static FrameworkElement Tile(double size)
     {
-        return new Border
-        {
-            Width = size, Height = size, CornerRadius = new CornerRadius(size * 0.225), Background = Brush(Cobalt),
-            Child = new Border { Padding = new Thickness(size * 0.16), Child = Symbol(size * 0.68, Brushes.White) },
-        };
+        var radius = new CornerRadius(size * 0.235);
+        var grid = new Grid { Width = size, Height = size };
+        grid.Children.Add(new Border { CornerRadius = radius, Background = TileFill });
+        grid.Children.Add(new Border { CornerRadius = radius, Background = Gloss, BorderThickness = new Thickness(size >= 28 ? 1 : 0), BorderBrush = Brush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF)) });
+        var glyph = Symbol(size * 0.6, Brushes.White);
+        glyph.HorizontalAlignment = HorizontalAlignment.Center;
+        glyph.VerticalAlignment = VerticalAlignment.Center;
+        grid.Children.Add(glyph);
+        return grid;
     }
 
     /// <summary>"droppo", with the "d" capHeight DIPs tall.</summary>
@@ -80,17 +93,22 @@ internal static class Brand
         };
     }
 
-    /// <summary>Symbol + wordmark side by side (light backgrounds: cobalt mark, navy word).</summary>
-    public static FrameworkElement Lockup(double height, bool onDark = false)
+    /// <summary>Icon + wordmark (+ tagline), like the logo on the brand board.</summary>
+    public static FrameworkElement Lockup(double height, bool onDark = false, bool tagline = false)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal };
-        var mark = Symbol(height, onDark ? Brushes.White : Brush(Cobalt));
-        var word = Wordmark(height * 0.6, onDark ? Brushes.White : Brush(Navy));
-        // the mark's ink is centred in its box; centre the word's cap height on it
-        word.Margin = new Thickness(height * 0.16, height * 0.2, 0, 0);
-        mark.VerticalAlignment = VerticalAlignment.Top;
-        row.Children.Add(mark);
-        row.Children.Add(word);
+        var tile = Tile(height);
+        tile.VerticalAlignment = VerticalAlignment.Center;
+        row.Children.Add(tile);
+        var texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(height * 0.24, 0, 0, 0) };
+        texts.Children.Add(Wordmark(height * (tagline ? 0.42 : 0.5), onDark ? Brushes.White : Brush(Navy)));
+        if (tagline)
+            texts.Children.Add(new TextBlock
+            {
+                Text = Tagline, FontSize = height * 0.2, FontWeight = FontWeights.SemiBold, Margin = new Thickness(1, height * 0.02, 0, 0),
+                Foreground = onDark ? Brush(Color.FromRgb(0xDC, 0xE9, 0xFF)) : Brush(Cobalt),
+            });
+        row.Children.Add(texts);
         return row;
     }
 }

@@ -21,9 +21,9 @@ public partial class WheelWindow : Window
     private const double Lift = 4; // how far the slice under the cursor moves out
 
     // frosted slices on the glass disc; the one under the cursor turns cobalt
-    private static readonly Color SliceColor = Color.FromArgb(0x52, 0xFF, 0xFF, 0xFF);
-    private static readonly Color LabelColor = Color.FromRgb(0x1C, 0x2C, 0x49);
-    private static readonly Color HintColor = Color.FromRgb(0x65, 0x70, 0x87);
+    private static readonly Color SliceColor = Color.FromArgb(0x9E, 0xFF, 0xFF, 0xFF);
+    private static readonly Color LabelColor = Color.FromRgb(0x0F, 0x2D, 0x5B);
+    private static readonly Color HintColor = Color.FromRgb(0x64, 0x74, 0x8B);
     private static readonly Color OnAccent = Colors.White;
     private static readonly Color OnAccentHint = Color.FromArgb(0xD9, 0xFF, 0xFF, 0xFF);
 
@@ -64,7 +64,7 @@ public partial class WheelWindow : Window
         DragLeave += OnDragLeave;
         Drop += OnDrop;
         Hub.MouseLeftButtonUp += (_, _) => HideNow();
-        HubMark.Content = Brand.Symbol(26, Brushes.White, 2.4);
+        HubMark.Content = Brand.Symbol(24, Brushes.White);
     }
 
     // ---------- showing and hiding ----------
