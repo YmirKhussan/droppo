@@ -115,4 +115,21 @@ public static class NativeMethods
         "alt" => VK_MENU,
         _ => VK_SHIFT,
     };
+
+    // ---- used by the glass windows ----
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT { public int Left, Top, Right, Bottom; }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetWindowRect(IntPtr hwnd, out RECT rect);
+
+    public const uint WDA_NONE = 0x0, WDA_EXCLUDEFROMCAPTURE = 0x11;
+
+    /// <summary>Hides a window from screen copies (Windows 10 2004+). Used for a split second while the glass refreshes.</summary>
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
+
+    /// <summary>Waits for Windows to finish drawing the next frame.</summary>
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmFlush();
 }

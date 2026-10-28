@@ -90,6 +90,14 @@ internal static class Glass
 
     public static Brush CardBackground => Enabled ? CardFill : SolidWhite;
 
+    /// <summary>Frost for a window over the blurred screen: more white over dark screens so text stays readable.</summary>
+    public static Brush FrostFor(double brightness)
+    {
+        byte top = brightness < 0.3 ? (byte)0xE0 : brightness < 0.55 ? (byte)0xC7 : (byte)0xAD;
+        byte bottom = (byte)Math.Max(0, top - 0x1A);
+        return Gradient(Color.FromArgb(top, 0xF8, 0xFB, 0xFF), Color.FromArgb(bottom, 0xEC, 0xF3, 0xFF));
+    }
+
     /// <summary>The see-through frost laid over the blurred desktop behind a window.</summary>
     public static Brush WindowTint => Enabled ? Tint : Flat;
     public static Brush CardBorder => Enabled ? CardEdge : FlatEdge;

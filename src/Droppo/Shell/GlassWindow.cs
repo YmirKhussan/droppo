@@ -41,6 +41,15 @@ internal class GlassWindow : Window
     private readonly Brush _fill;
     private const double Radius = 12;
 
+    // ---- the glass: a blurred copy of the screen behind, wider than the window so it can slide as you drag ----
+    private readonly Canvas _behindLayer = new() { IsHitTestVisible = false, ClipToBounds = true };
+    private readonly System.Windows.Threading.DispatcherTimer _recapture = new() { Interval = TimeSpan.FromMilliseconds(250) };
+    private System.Windows.Controls.Image? _behind;
+    private Int32Rect _captured;          // screen area of the copy, physical pixels
+    private DateTime _capturedAt;
+    private bool _canExclude = true;      // Windows can hide this window from its own screen copy (Windows 10 2004+)
+    private Grid? _shell;
+
     /// <param name="card">Put the content on one frosted card (dialogs).</param>
     /// <param name="overlayCaption">No title row: the content fills the window and the window buttons float top-right
     /// (the main window, whose sidebar carries the logo).</param>
@@ -58,13 +67,12 @@ internal class GlassWindow : Window
             AllowsTransparency = true;
             Background = Brushes.Transparent; // the rounded frame paints the frost
             _chrome.GlassFrameThickness = new Thickness(0);
-            SourceInitialized += (_, _) =>
-            {
-                var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-                if (!Glass.EnableBlurBehind(hwnd)) Log.Write("Window blur unavailable: the glass stays see-through but unblurred.");
-                UpdateRegion();
-            };
-            SizeChanged += (_, _) => UpdateRegion();
+            // what's behind the window, blurred: taken before the window first appears (so it can't catch itself)
+            SourceInitialized += (_, _) => { Capture(excludeSelf: false); UpdateRegion(); };
+            SizeChanged += (_, _) => { UpdateRegion(); PlaceBehind(); if (!Covered()) RecaptureSoon(); };
+            LocationChanged += (_, _) => { PlaceBehind(); if (!Covered()) RecaptureSoon(); else RecaptureSoon(slow: true); };
+            Activated += (_, _) => { if ((DateTime.UtcNow - _capturedAt).TotalSeconds > 2) RecaptureSoon(); };
+            _recapture.Tick += (_, _) => { _recapture.Stop(); Capture(excludeSelf: true); };
         }
         else
         {
@@ -91,12 +99,22 @@ internal class GlassWindow : Window
     protected override void OnContentChanged(object oldContent, object newContent)
     {
         base.OnContentChanged(oldContent, newContent);
-        if (_wrapping || ReferenceEquals(newContent, _frame) || newContent is not UIElement body) return;
+        if (_wrapping || ReferenceEquals(newContent, _frame) || ReferenceEquals(newContent, _shell) || newContent is not UIElement body) return;
         _wrapping = true;
         try
         {
             Content = null; // let go of it first: an element can only have one parent
-            Content = Frame(body);
+            var frame = Frame(body);
+            if (_glass)
+            {
+                // layers: the blurred screen copy (clipped to the rounded pane), then the frosted pane with the content
+                _shell = new Grid();
+                _shell.Children.Add(_behindLayer);
+                _shell.Children.Add(frame);
+                _shell.SizeChanged += (_, _) => _behindLayer.Clip = new RectangleGeometry(new Rect(0, 0, _shell.ActualWidth, _shell.ActualHeight), _frame!.CornerRadius.TopLeft, _frame.CornerRadius.TopLeft);
+                Content = _shell;
+            }
+            else Content = frame;
         }
         finally { _wrapping = false; }
     }
@@ -150,7 +168,91 @@ internal class GlassWindow : Window
         BorderBrush = _glass ? Brand.Brush(Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF)) : Ui.Line,
     };
 
-    /// <summary>Clips the window (and Windows' blur behind it) to the rounded pane.</summary>
+    // ---------- glass: copy, place, refresh ----------
+
+    private void RecaptureSoon(bool slow = false)
+    {
+        if (!_glass) return;
+        _recapture.Stop();
+        _recapture.Interval = TimeSpan.FromMilliseconds(slow ? 700 : 250);
+        _recapture.Start();
+    }
+
+    private (double X, double Y) Scale()
+    {
+        var source = PresentationSource.FromVisual(this);
+        return (source?.CompositionTarget?.TransformToDevice.M11 ?? 1, source?.CompositionTarget?.TransformToDevice.M22 ?? 1);
+    }
+
+    private NativeMethods.RECT WindowRect()
+    {
+        NativeMethods.GetWindowRect(new System.Windows.Interop.WindowInteropHelper(this).Handle, out var r);
+        return r;
+    }
+
+    /// <summary>True while the screen copy still covers the whole window.</summary>
+    private bool Covered()
+    {
+        if (_behind == null) return false;
+        var r = WindowRect();
+        return r.Left >= _captured.X && r.Top >= _captured.Y && r.Right <= _captured.X + _captured.Width && r.Bottom <= _captured.Y + _captured.Height;
+    }
+
+    /// <summary>Copies the screen around the window (a quarter of its size extra on every side), blurs it, frosts it.</summary>
+    private void Capture(bool excludeSelf)
+    {
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+        var r = WindowRect();
+        int w = r.Right - r.Left, h = r.Bottom - r.Top;
+        if (w <= 0 || h <= 0) return;
+        int padX = w / 4, padY = h / 4;
+        int x = Math.Max((int)SystemParameters.VirtualScreenLeft, r.Left - padX), y = Math.Max((int)SystemParameters.VirtualScreenTop, r.Top - padY);
+        int cw = w + padX * 2, ch = h + padY * 2;
+
+        bool excluded = false;
+        if (excludeSelf)
+        {
+            if (!_canExclude) return; // keep the old copy rather than catch ourselves in it
+            excluded = NativeMethods.SetWindowDisplayAffinity(hwnd, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
+            if (!excluded) { _canExclude = false; Log.Write("Glass can't refresh on this Windows version; it keeps the first copy."); return; }
+            NativeMethods.DwmFlush();
+        }
+        (System.Windows.Media.Imaging.BitmapSource Image, double Brightness)? copy;
+        try { copy = Glass.CaptureBehind(x, y, cw, ch); }
+        finally { if (excluded) NativeMethods.SetWindowDisplayAffinity(hwnd, NativeMethods.WDA_NONE); }
+
+        if (copy is not { } c)
+        {
+            if (_frame != null && _behind == null) _frame.Background = Glass.WindowBackground; // never a see-through window over nothing
+            return;
+        }
+        _captured = new Int32Rect(x, y, cw, ch);
+        _capturedAt = DateTime.UtcNow;
+        if (_behind == null)
+        {
+            _behind = Glass.BlurredImage(c.Image);
+            _behindLayer.Children.Add(_behind);
+        }
+        else _behind.Source = c.Image;
+        if (_frame != null) _frame.Background = Glass.FrostFor(c.Brightness);
+        PlaceBehind();
+    }
+
+    /// <summary>Keeps the copy lined up with the screen as the window moves, so the glass looks fixed in place.</summary>
+    private void PlaceBehind()
+    {
+        if (_behind == null) return;
+        var (sx, sy) = Scale();
+        var r = WindowRect();
+        double margin = _shell?.Margin.Left ?? 0;
+        Canvas.SetLeft(_behind, (_captured.X - r.Left) / sx - margin);
+        Canvas.SetTop(_behind, (_captured.Y - r.Top) / sy - margin);
+        _behind.Width = _captured.Width / sx;
+        _behind.Height = _captured.Height / sy;
+    }
+
+    /// <summary>Clips the window to the rounded pane.</summary>
     private void UpdateRegion()
     {
         if (!_glass) return;
@@ -199,9 +301,10 @@ internal class GlassWindow : Window
     private void UpdateState()
     {
         // a maximised window spills over the screen edge by its resize border; pull the content back in
+        if (_shell != null) _shell.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
         if (_frame != null)
         {
-            _frame.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+            if (_shell == null) _frame.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
             _frame.CornerRadius = new CornerRadius(_glass && WindowState != WindowState.Maximized ? Radius : 0);
         }
         UpdateRegion();
