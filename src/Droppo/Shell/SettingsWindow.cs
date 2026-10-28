@@ -102,7 +102,7 @@ internal sealed class SettingsWindow : GlassWindow
         look.Children.Add(_glass);
         _motion.Margin = new Thickness(0, 8, 0, 0);
         look.Children.Add(_motion);
-        look.Children.Add(Note("Glass needs Windows 11 and \"Transparency effects\" on. Changes show on windows opened after saving."));
+        look.Children.Add(Note("Turn glass off for plain white windows. It also follows Windows' \"Transparency effects\" setting. Changes show on windows opened after saving."));
         Section(panel, "Look and feel", look);
 
         // ---- helper programs ----

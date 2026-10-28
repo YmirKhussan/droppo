@@ -1,6 +1,6 @@
 ![Droppo](brand/droppo-banner.png)
 
-# Droppo (v0.6)
+# Droppo (v0.7)
 
 **Drop it. Done.** Droppo is a small Windows utility for everyday file jobs. Drag a file, hold **Shift**, and a wheel of actions pops up under your cursor. Release on a slice and the result lands next to the original (or in a folder you pick in Settings). Nothing is uploaded, nothing is overwritten.
 

@@ -161,6 +161,7 @@ internal sealed class StudioWindow : GlassWindow
         // ---- editor (hidden until a page is opened) ----
         _editor = new PageEditor(this, context, _work) { Visibility = Visibility.Collapsed };
         _editor.Closed += CloseEditor;
+        _status.Text = ""; // the editor sets its own hint while being built; the pages view starts with its own
 
         // ---- busy overlay ----
         _busy = new Border
