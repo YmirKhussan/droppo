@@ -5,6 +5,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
+using Droppo.Core;
 using Droppo.Shell.Studio;
 
 namespace Droppo.Shell;
