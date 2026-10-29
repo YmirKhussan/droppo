@@ -163,6 +163,44 @@ $qv = & (Join-Path $qDir 'qpdf.exe') --version
 if ($LASTEXITCODE -ne 0) { Fail 'The copied qpdf does not run (a DLL is probably missing).' }
 Write-Host ($qv | Select-Object -First 1)
 
+# ---------------------------------------------------------------- whisper.cpp (Transcribe)
+Step 'whisper.cpp (speech to text)'
+$wDir = Join-Path $stage 'tools\whisper-cli'
+New-Item -ItemType Directory -Force -Path $wDir | Out-Null
+$wZip = Join-Path $downloads 'whisper-bin-x64.zip'
+if ($Fresh -and (Test-Path $wZip)) { Remove-Item $wZip -Force }
+if (-not (Test-Path $wZip)) {
+    $headers = @{ 'User-Agent' = 'Droppo-build' }
+    if ($env:GH_TOKEN) { $headers['Authorization'] = "Bearer $env:GH_TOKEN" }
+    $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest' -Headers $headers
+    Write-Host "whisper.cpp $($release.tag_name): $(($release.assets | ForEach-Object { $_.name }) -join ', ')"
+    $asset = $release.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+    if (-not $asset) { $asset = $release.assets | Where-Object { $_.name -like '*bin-x64*.zip' -and $_.name -notmatch 'blas|cuda|cublas|vulkan' } | Select-Object -First 1 }
+    if (-not $asset) { Fail "No plain Windows x64 zip in whisper.cpp $($release.tag_name)." }
+    Download $asset.browser_download_url $wZip
+    $release.tag_name | Out-File (Join-Path $downloads 'whisper-version.txt') -Encoding ascii
+}
+$wTmp = Join-Path $downloads 'whisper-unzipped'
+if (Test-Path $wTmp) { Remove-Item $wTmp -Recurse -Force }
+Expand-Archive $wZip -DestinationPath $wTmp -Force
+$cli = Get-ChildItem $wTmp -Recurse -Filter 'whisper-cli.exe' | Select-Object -First 1
+if (-not $cli) { Fail 'whisper-cli.exe not found inside the whisper.cpp download.' }
+# whisper-cli.exe plus the DLLs next to it (ggml, whisper, the CPU back ends)
+Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -eq 'whisper-cli.exe' -or $_.Extension -eq '.dll' } |
+    Copy-Item -Destination $wDir
+$wLic = Get-ChildItem $wTmp -Recurse -File | Where-Object { $_.Name -match '^LICENSE' } | Select-Object -First 1
+if ($wLic) { Copy-Item $wLic.FullName (Join-Path $licenses 'whisper.cpp-LICENSE.txt') }
+# Microsoft's C++ runtime: whisper.cpp is built with Visual Studio and needs it. Not every PC has it, so bring a copy.
+foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcomp140.dll') {
+    $from = Join-Path $env:WINDIR "System32\$dll"
+    if (-not (Test-Path (Join-Path $wDir $dll)) -and (Test-Path $from)) { Copy-Item $from $wDir }
+}
+Write-Host "whisper files: $((Get-ChildItem $wDir | ForEach-Object { $_.Name }) -join ', ')"
+$wOut = & (Join-Path $wDir 'whisper-cli.exe') --help 2>&1 | Out-String
+if ($LASTEXITCODE -eq -1073741515) { Fail 'The copied whisper-cli does not start (a DLL is missing).' }
+if ($wOut -notmatch '-osrt') { Write-Host "WARNING: whisper-cli --help doesn't mention -osrt. Output was:`n$wOut" -ForegroundColor Yellow }
+else { Write-Host 'whisper-cli runs.' }
+
 # ---------------------------------------------------------------- installer
 Step 'Making the installer'
 & $iscc /Q "/DAppVersion=$version" "/DStageDir=$stage" "/DOutputDir=$dist" (Join-Path $PSScriptRoot 'Droppo.iss')

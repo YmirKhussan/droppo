@@ -27,6 +27,22 @@ public sealed class ActionContext
     /// <summary>Called once questions are answered and the real work begins (the app uses it for "Working on it...").</summary>
     public Action? WorkStarted { get; set; }
 
+    /// <summary>How far along the whole job is (0 to 1) plus an optional line of text. Called from a background thread.</summary>
+    public Action<double, string?>? ProgressChanged { get; set; }
+
+    /// <summary>Which file of the batch is being worked on (set by the runner), so per-file progress adds up.</summary>
+    public int FileIndex { get; set; }
+    public int FileCount { get; set; } = 1;
+
+    /// <summary>Progress within the current file (0 to 1); turned into progress for the whole batch.</summary>
+    public void Report(double fraction, string? text = null)
+    {
+        if (ProgressChanged == null) return;
+        double f = double.IsFinite(fraction) ? Math.Clamp(fraction, 0, 1) : 0;
+        int count = Math.Max(1, FileCount);
+        ProgressChanged((Math.Clamp(FileIndex, 0, count - 1) + f) / count, text);
+    }
+
     public FFmpeg Ff => FFmpeg ?? throw ToolMissingException.FFmpeg();
     public Qpdf Q => Qpdf ?? throw ToolMissingException.Qpdf();
     public IPdfRenderer Renderer => PdfRenderer ?? throw ToolMissingException.PdfRenderer();
@@ -127,8 +143,11 @@ public static class ActionRunner
             }
             else if (action.PerFile != null)
             {
-                foreach (var file in files)
+                ctx.FileCount = files.Count;
+                for (int i = 0; i < files.Count; i++)
                 {
+                    var file = files[i];
+                    ctx.FileIndex = i;
                     ctx.Token.ThrowIfCancellationRequested();
                     if (!File.Exists(file)) continue;
                     try

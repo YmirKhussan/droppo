@@ -1,6 +1,6 @@
 ![Droppo](brand/droppo-banner.png)
 
-# Droppo (v0.9)
+# Droppo (v0.10)
 
 **Drop it. Done.** Droppo is a small Windows utility for everyday file jobs. Drag a file, hold **Shift**, and a wheel of actions pops up under your cursor. Release on a slice and the result lands next to the original (or in a folder you pick in Settings). Nothing is uploaded, nothing is overwritten.
 
@@ -14,13 +14,14 @@ For PDFs there's also **PDF Studio**: a window where you see every page, drag th
 
 1. Download **`Droppo-Setup-<version>.exe`** from the [Releases page](https://github.com/YmirKhussan/droppo/releases/latest) and double-click it.
 2. Windows may say "Windows protected your PC" because the app isn't code-signed yet. Click **More info** > **Run anyway**.
-3. Click Install. No admin password needed, nothing else to install: .NET, FFmpeg and qpdf are inside.
+3. Click Install. No admin password needed, nothing else to install: .NET, FFmpeg, qpdf and the whisper.cpp speech engine are inside.
 
 A welcome window explains the basics. Had the old CursorConvert installed? The installer removes it, and Droppo brings over your settings and saved signature. Uninstall from Settings > Apps like any other app.
 
 Optional extras the installer can't include:
 - **Word/PowerPoint/Excel to PDF** uses Microsoft Office if it's installed. No Office? Install LibreOffice (free).
 - **Text recognition (OCR)** uses the languages installed in Windows (Settings > Time & language > Language).
+- **Transcribe** downloads its speech model the first time you use it (148 MB Quick or 488 MB Accurate, you pick). After that it works offline.
 
 ## Make the installer (you, once per version)
 
@@ -56,8 +57,8 @@ The slices change depending on what you drag. Formats you already have are hidde
 | Dragging | Slices |
 |---|---|
 | Images | PNG, JPG, WebP, PDF, Smaller, **Resize**, Clean, **No BG**, Text (one image) / Arrange + **Rename** (several) |
-| Video | MP4, GIF (first 20s), MP3, Smaller, **Trim** (one clip), **Rotate**, Mute, Frame, **Join** + Rename (several) |
-| Audio | MP3, WAV, M4A, FLAC, Louder, Smaller, **Trim** (one file) / **Join** + Rename (several) |
+| Video | MP4, GIF (first 20s), MP3, **Transcribe**, Smaller, **Trim** (one clip), **Rotate**, Mute, Frame, **Join** + Rename (several) |
+| Audio | **Transcribe**, MP3, WAV, M4A, FLAC, Louder, Smaller, **Trim** (one file) / **Join** + Rename (several) |
 | PDF | **Studio**, **Merge** (2+ PDFs), JPG, PNG, Split, Smaller, Lock, Text, Rotate, Rename (several) |
 | Word / PowerPoint / Excel | PDF, 1 PDF (combine several), Studio, ZIP, copy paths/names |
 | Images + PDFs + docs together | PDF (combine all), Studio, ZIP, copy paths/names |
@@ -77,6 +78,7 @@ Notes:
 - **Rename** renames many files at once with a live preview: `#` is a number (`###` = 001), `{name}` the old name, `{date}` the file's date. Changed your mind? Tray > **Undo last rename**.
 - **Clean** removes GPS location, camera info and text tags. Lossless for JPG and PNG.
 - **Text** reads text with OCR (works on photos and scans too), copies it to the clipboard and saves a .txt next to the file.
+- **Transcribe** turns speech into text, fully offline (whisper.cpp, an open-source version of OpenAI's Whisper). You get `name-transcript.txt` (paragraphs break where the speaker pauses) and, for videos, `name.srt` subtitles that video players pick up automatically. The language is detected by itself (English, Malay, Chinese, Tamil and about 95 more). The notification shows a real percentage and has a **Stop** button. The first time, it asks which speech model to download: **Quick** (148 MB) or **Accurate** (488 MB, better with accents, noise and languages other than English). Change it later in Settings. Models live in `%LocalAppData%\Droppo\models` and are removed when you uninstall.
 - **Lock** adds a password to a PDF. On a locked PDF it asks for the password and saves an unlocked copy.
 - **Merge**, **Studio** and **Arrange** open PDF Studio so you can set the order before saving.
 - Every PDF slice works on password-protected PDFs: it asks for the password first.
@@ -119,8 +121,8 @@ Colours (black, blue, red), the **font list** and A− / A+ (text, image and sig
 Click the tray icon (or open Droppo from the Start menu while it's running):
 - key to hold while dragging (Shift, Ctrl, Alt) and Start with Windows
 - where results go: next to the original, always one folder (default `Downloads\Droppo`), or ask every time
-- PDF-to-picture sharpness and GIF length
-- helper programs: shows whether FFmpeg, qpdf and LibreOffice were found, with a Browse button if yours live somewhere unusual
+- PDF-to-picture sharpness, GIF length and the Transcribe speech model (Quick or Accurate)
+- helper programs: shows whether FFmpeg, qpdf, whisper and LibreOffice were found, with a Browse button if yours live somewhere unusual
 - your saved signature: redraw or delete
 - look and feel: frosted glass windows (Windows 11) and animations, each can be switched off
 
@@ -132,7 +134,8 @@ Behind the scenes it's all in `%AppData%\Droppo\settings.json`:
 | `TriggerKey` | Shift | Shift, Ctrl or Alt |
 | `GlassEffects` / `Animations` | true / true | Frosted glass windows, short animations |
 | `OutputMode` / `OutputFolder` | SameFolder | `SameFolder`, `Folder` or `Ask` |
-| `FfmpegPath` / `QpdfPath` / `LibreOfficePath` | empty | Full path if auto-detect can't find the tool |
+| `TranscribeModel` | empty (asks) | `base` (Quick) or `small` (Accurate) |
+| `FfmpegPath` / `QpdfPath` / `WhisperPath` / `LibreOfficePath` | empty | Full path if auto-detect can't find the tool |
 | `PdfImageDpi` | 150 | Resolution of images made from PDF pages (300 for print quality) |
 | `GifMaxSeconds` | 20 | Video to GIF only uses this many seconds |
 | `PdfMaxImageEdge` | 2480 | Max pixels per image inside PDFs (2480 = A4 at 300 dpi) |
@@ -155,6 +158,7 @@ Restart the app after editing the file by hand. Your signature is in `signature.
 - **"FFmpeg not found"** / **"needs qpdf"**: shouldn't happen with the installer. From `run.bat`: `winget install Gyan.FFmpeg` / `winget install QPDF.QPDF`.
 - **OCR / Text says it isn't available**: Windows needs a language with text recognition. Settings > Time & language > Language, make sure English (or your language) is installed.
 - **Office to PDF fails**: close any open Word/PowerPoint/Excel dialogs and try again, or install LibreOffice.
+- **Transcribe can't download the model**: it needs the internet once (huggingface.co). Behind a strict office network? Download `ggml-base.bin` or `ggml-small.bin` from huggingface.co/ggerganov/whisper.cpp yourself and put it in `%LocalAppData%\Droppo\models`.
 - **Something failed**: tray > Open log. It has the exact error. Paste it to Claude.
 - **iPhone HEIC photos**: need FFmpeg 7.1 or newer. `winget upgrade Gyan.FFmpeg`.
 - **Wheel never appears**: press Shift *after* the drag started, and don't run Droppo as administrator.
@@ -166,6 +170,7 @@ Restart the app after editing the file by hand. Your signature is in `signature.
 src/Droppo/
   Core/          the engine (no Windows UI code, tested on its own)
     ImageOps / AvOps / PdfOps / OfficeOps / TextOps / OtherOps   <- wheel actions
+    TranscribeOps (speech to text: model download, whisper-cli, .txt/.srt)
     ImageEditOps (resize, no bg) / MediaEditOps (trim, join, rotate) / RenameOps
     FFmpeg.cs  Qpdf.cs  ProcessRunner.cs                         <- external tools
     JpegTools  PngTools  PdfWriter  FontMetrics                   <- byte-level helpers

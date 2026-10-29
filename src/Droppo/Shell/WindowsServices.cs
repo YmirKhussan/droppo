@@ -211,6 +211,9 @@ internal sealed class AppPrompts : IUserPrompts
         return dialog.ShowDialog() == true ? dialog.FolderName : null;
     });
 
+    public Task<string?> AskChoiceAsync(ChoiceRequest request) =>
+        OnUi(() => Studio.Dialogs.AskChoice(request, owner: null));
+
     public void OpenStudio(IReadOnlyList<string> files)
     {
         var list = files.ToList();

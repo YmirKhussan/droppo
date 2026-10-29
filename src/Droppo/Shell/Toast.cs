@@ -46,6 +46,8 @@ internal sealed class Toast : Window
     };
     private readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
     private readonly Border _progress;
+    private readonly Border _bar;
+    private bool _measured;
     private readonly TranslateTransform _progressShift = new();
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(5) };
     private string? _reveal;
@@ -79,11 +81,12 @@ internal sealed class Toast : Window
         texts.Children.Add(_buttons);
 
         var track = new Border { Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.AccentSoft, ClipToBounds = true, Margin = new Thickness(0, 12, 4, 2) };
-        track.Child = new Border
+        _bar = new Border
         {
             Width = 110, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(3),
             Background = Ui.Accent, RenderTransform = _progressShift,
         };
+        track.Child = _bar;
         _progress = track;
         texts.Children.Add(_progress);
 
@@ -173,6 +176,9 @@ internal sealed class Toast : Window
 
         bool working = kind == ToastKind.Working;
         _progress.Visibility = working ? Visibility.Visible : Visibility.Collapsed;
+        _measured = false;
+        _bar.BeginAnimation(FrameworkElement.WidthProperty, null);
+        _bar.Width = 110;
         if (working && Motion.Enabled)
         {
             var sweep = new DoubleAnimation(-90, CardWidth - 60, TimeSpan.FromMilliseconds(1100)) { RepeatBehavior = RepeatBehavior.Forever, EasingFunction = Motion.Out };
@@ -234,6 +240,35 @@ internal sealed class Toast : Window
         b.Freeze();
         return b;
     }
+
+    /// <summary>Swaps the sweeping bar for a real one (0 to 1) and updates the line under the title.</summary>
+    public void SetProgress(double fraction, string? text)
+    {
+        if (!IsVisible || _title.Tag is not ToastKind.Working) return;
+        if (!string.IsNullOrWhiteSpace(text) && _body.Text != text)
+        {
+            _body.Text = text;
+            _body.Visibility = Visibility.Visible;
+        }
+        double track = _progress.ActualWidth;
+        if (track <= 0) return;
+        if (!_measured)
+        {
+            _measured = true;
+            _progressShift.BeginAnimation(TranslateTransform.XProperty, null);
+            _progressShift.X = 0;
+        }
+        double width = Math.Max(6, track * Math.Clamp(fraction, 0, 1));
+        if (Motion.Enabled && Math.Abs(width - _bar.ActualWidth) > 1)
+            _bar.BeginAnimation(FrameworkElement.WidthProperty, new DoubleAnimation(width, TimeSpan.FromMilliseconds(180)) { EasingFunction = Motion.Out });
+        else
+        {
+            _bar.BeginAnimation(FrameworkElement.WidthProperty, null);
+            _bar.Width = width;
+        }
+    }
+
+    public bool IsWorking => IsVisible && _title.Tag is ToastKind.Working;
 
     public void Dismiss()
     {

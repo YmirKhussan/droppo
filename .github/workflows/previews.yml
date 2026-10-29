@@ -40,6 +40,57 @@ jobs:
           if (-not $p.WaitForExit(300000)) { $p.Kill(); "timed out" | Out-File previews/timeout.txt }
           Get-ChildItem previews | Format-Table Name, Length
 
+      - name: Get FFmpeg and whisper.cpp (for the Transcribe check)
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          New-Item -ItemType Directory -Force previews/transcribe, build/tools/ffmpeg, build/tools/whisper-cli | Out-Null
+          Invoke-WebRequest https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip -OutFile ff.zip -UseBasicParsing
+          Expand-Archive ff.zip -DestinationPath ffx -Force
+          Copy-Item (Get-ChildItem ffx -Recurse -Filter ffmpeg.exe | Select-Object -First 1).FullName build/tools/ffmpeg/
+          $release = Invoke-RestMethod -Uri https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest -Headers @{ Authorization = "Bearer $env:GH_TOKEN" }
+          $names = ($release.assets | ForEach-Object { "$($_.name) ($($_.size))" }) -join "`n"
+          "whisper.cpp $($release.tag_name)`n$names" | Out-File previews/transcribe/whisper-release.txt
+          $asset = $release.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+          Invoke-WebRequest $asset.browser_download_url -OutFile w.zip -UseBasicParsing
+          Expand-Archive w.zip -DestinationPath wx -Force
+          $cli = Get-ChildItem wx -Recurse -Filter whisper-cli.exe | Select-Object -First 1
+          (Get-ChildItem $cli.DirectoryName | ForEach-Object { "$($_.Name) $($_.Length)" }) -join "`n" | Out-File previews/transcribe/whisper-files.txt
+          Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -eq 'whisper-cli.exe' -or $_.Extension -eq '.dll' } | Copy-Item -Destination build/tools/whisper-cli
+          & build/tools/whisper-cli/whisper-cli.exe --help *> previews/transcribe/whisper-help.txt
+          "exit $LASTEXITCODE" | Add-Content previews/transcribe/whisper-help.txt
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC" -Recurse -Filter dumpbin.exe | Where-Object { $_.FullName -match 'Hostx64\\x64' } | Select-Object -First 1
+          Get-ChildItem build/tools/whisper-cli -File | ForEach-Object { & $dumpbin.FullName /nologo /dependents $_.FullName } | Out-File previews/transcribe/whisper-deps.txt
+
+      - name: Say something with Windows' voice
+        continue-on-error: true
+        shell: powershell
+        run: |
+          Add-Type -AssemblyName System.Speech
+          $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+          ($s.GetInstalledVoices() | ForEach-Object { $_.VoiceInfo.Name }) -join ', ' | Out-File previews/transcribe/voices.txt
+          $s.Rate = 0
+          $s.SetOutputToWaveFile("$PWD\previews\transcribe\speech.wav")
+          $s.Speak("The quick brown fox jumps over the lazy dog. Droppo turns speech into text, right on your own computer.")
+          $s.Dispose()
+          Copy-Item previews/transcribe/speech.wav "previews/transcribe/caf$([char]0xE9) notes.wav"
+          & build/tools/ffmpeg/ffmpeg.exe -hide_banner -loglevel error -y -f lavfi -i color=c=0x3882F6:s=640x360:r=25 -i previews/transcribe/speech.wav -shortest -c:v libx264 -pix_fmt yuv420p -c:a aac previews/transcribe/speech-video.mp4
+
+      - name: Transcribe them with Droppo
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath (Resolve-Path build/Droppo.exe) -ArgumentList '--transcribe-test', "`"$PWD\previews\transcribe`"" -PassThru
+          if (-not $p.WaitForExit(900000)) { $p.Kill(); "timed out" | Out-File previews/transcribe/timeout.txt }
+          Get-Content previews/transcribe/results.txt -ErrorAction SilentlyContinue
+          Remove-Item previews/transcribe/*.wav, previews/transcribe/*.mp4 -ErrorAction SilentlyContinue
+
       - name: Put the pictures on the previews branch
         shell: pwsh
         run: |

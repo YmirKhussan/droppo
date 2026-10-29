@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Droppo.Core;
 using Droppo.Core.Studio;
 
@@ -310,6 +312,95 @@ internal static partial class Dialogs
         };
         w.Content = panel;
         w.Loaded += (_, _) => { w.Activate(); valueBox.Focus(); valueBox.SelectAll(); };
+        return w.ShowDialog() == true ? result : null;
+    }
+
+    /// <summary>"Pick one": a row per option with a dot that fills in, then a confirm button.</summary>
+    public static string? AskChoice(ChoiceRequest request, Window? owner)
+    {
+        var w = Ui.Dialog(request.Title, owner);
+        var panel = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 404 };
+        panel.Children.Add(Ui.Txt(request.Heading, 18, bold: true));
+        var intro = Ui.Txt(request.Message, 13, color: Ui.Muted);
+        intro.TextWrapping = TextWrapping.Wrap;
+        intro.TextTrimming = TextTrimming.None;
+        intro.Margin = new Thickness(0, 4, 0, 14);
+        panel.Children.Add(intro);
+
+        string selected = request.Choices.Any(c => c.Id == request.Selected) ? request.Selected : request.Choices[0].Id;
+        var rows = new List<(Choice Choice, Border Row, Border Dot)>();
+
+        void Sync()
+        {
+            foreach (var (choice, row, dot) in rows)
+            {
+                bool on = choice.Id == selected;
+                row.BorderBrush = on ? Ui.Accent : Ui.Edge;
+                row.Background = on ? Ui.AccentSoft : Ui.ButtonFill;
+                dot.BorderBrush = on ? Ui.Accent : Ui.Muted;
+                dot.Background = on ? Ui.Accent : Brushes.Transparent;
+            }
+        }
+
+        foreach (var choice in request.Choices)
+        {
+            var dot = new Border
+            {
+                Width = 16, Height = 16, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(2),
+                VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 2, 12, 0),
+                Child = new Border { Width = 6, Height = 6, CornerRadius = new CornerRadius(3), Background = Brushes.White },
+            };
+            var texts = new StackPanel();
+            texts.Children.Add(Ui.Txt(choice.Label, 14, bold: true));
+            var detail = Ui.Txt(choice.Detail, 12.5, color: Ui.Muted);
+            detail.TextWrapping = TextWrapping.Wrap;
+            detail.TextTrimming = TextTrimming.None;
+            detail.Margin = new Thickness(0, 2, 0, 0);
+            texts.Children.Add(detail);
+            var line = new DockPanel();
+            DockPanel.SetDock(dot, Dock.Left);
+            line.Children.Add(dot);
+            line.Children.Add(texts);
+            var row = new Border
+            {
+                Child = line, Padding = new Thickness(14, 12, 14, 12), Margin = new Thickness(0, 0, 0, 8),
+                CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1.5), Cursor = Cursors.Hand,
+            };
+            var id = choice.Id;
+            row.MouseLeftButtonUp += (_, _) => { selected = id; Sync(); };
+            row.MouseEnter += (_, _) => { if (selected != id) row.Background = Ui.Hover; };
+            row.MouseLeave += (_, _) => Sync();
+            rows.Add((choice, row, dot));
+            panel.Children.Add(row);
+        }
+        Sync();
+
+        string? result = null;
+        void Accept()
+        {
+            result = selected;
+            w.DialogResult = true;
+        }
+        var go = Ui.Btn(null, request.Confirm, Accept, primary: true);
+        var cancel = Ui.Btn(null, "Cancel", () => w.DialogResult = false);
+        var buttons = Ui.ButtonRow(cancel, go);
+        buttons.Margin = new Thickness(0, 8, 0, 0);
+        panel.Children.Add(buttons);
+        w.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter) { e.Handled = true; Accept(); }
+            else if (e.Key == Key.Escape) { e.Handled = true; w.DialogResult = false; }
+            else if (e.Key is Key.Up or Key.Down)
+            {
+                e.Handled = true;
+                int i = rows.FindIndex(r => r.Choice.Id == selected);
+                i = Math.Clamp(i + (e.Key == Key.Down ? 1 : -1), 0, rows.Count - 1);
+                selected = rows[i].Choice.Id;
+                Sync();
+            }
+        };
+        w.Content = panel;
+        w.Loaded += (_, _) => w.Activate();
         return w.ShowDialog() == true ? result : null;
     }
 

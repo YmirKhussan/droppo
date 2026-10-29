@@ -27,7 +27,7 @@ internal sealed class HomeWindow : GlassWindow
         (Page.Compress, "", "Compress", "Smaller file sizes", "Make files smaller, to a size you pick."),
         (Page.Pdf, "", "PDF", "Edit, merge, split", "Arrange, edit, sign and protect PDFs."),
         (Page.Organise, "", "Organise", "Rename, zip, join", "Tidy up many files at once."),
-        (Page.Tools, "", "Tools", "Trim, rotate, more", "Little fixes for pictures, video and audio."),
+        (Page.Tools, "", "Tools", "Transcribe, trim, more", "Speech to text, plus little fixes for pictures, video and audio."),
     };
 
     // what each group can do, shown before any file is picked
@@ -61,6 +61,7 @@ internal sealed class HomeWindow : GlassWindow
         },
         [Page.Tools] = new[]
         {
+            ("\uE720", "Transcribe", "Speech in a video or recording to text and subtitles, all on your PC"),
             ("", "Trim", "Cut the start and end of a video or recording"),
             ("", "Rotate video", "Fix phone videos filmed sideways"),
             ("", "Remove background", "Logos and product shots on plain backgrounds"),
@@ -467,6 +468,7 @@ internal sealed class HomeWindow : GlassWindow
         "img.clean" => "",
         "img.nobg" => "",
         "vid.trim" or "aud.trim" => "",
+        "vid.transcribe" or "aud.transcribe" => "\uE720",
         "vid.mute" => "",
         "vid.frame" => "",
         "aud.loud" => "",

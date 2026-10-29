@@ -12,6 +12,16 @@ qpdf (tools\qpdf\)
   Source code: https://github.com/qpdf/qpdf
   Licence text: licenses\ folder, or https://www.apache.org/licenses/LICENSE-2.0
 
+whisper.cpp (tools\whisper-cli\)
+  Used for Transcribe (speech to text). Copyright (c) the ggml authors. Licensed under the MIT License.
+  Source code: https://github.com/ggml-org/whisper.cpp
+  Licence text: licenses\whisper.cpp-LICENSE.txt
+  The speech models it uses (OpenAI Whisper, MIT License) are downloaded on first use from
+  https://huggingface.co/ggerganov/whisper.cpp and kept in %LOCALAPPDATA%\Droppo\models.
+
+Microsoft Visual C++ runtime (tools\whisper-cli\msvcp140.dll, vcruntime140*.dll, vcomp140.dll)
+  Needed by whisper.cpp. Redistributable under the Microsoft Visual Studio licence terms.
+
 .NET runtime, WPF and Windows Forms (the rest of the files next to Droppo.exe)
   Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License.
   https://github.com/dotnet/runtime  https://github.com/dotnet/wpf  https://github.com/dotnet/winforms

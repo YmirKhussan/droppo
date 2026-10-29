@@ -49,6 +49,8 @@ jobs:
 
       - name: Build installer
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: ./installer/build.ps1 -NoOpen
 
       - name: Is this a new version?

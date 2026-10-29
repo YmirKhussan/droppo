@@ -64,6 +64,10 @@ Filename: "{app}\Droppo.exe"; Description: "Start Droppo now"; Flags: nowait pos
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/f /im Droppo.exe"; Flags: runhidden; RunOnceId: "CloseDroppo"
 
+[UninstallDelete]
+; the speech models Transcribe downloaded (they can be hundreds of MB)
+Type: filesandordirs; Name: "{localappdata}\Droppo\models"
+
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nDrag a file, hold Shift, let go on what you want. Drop it. Done.
 FinishedHeadingLabel=Droppo is ready

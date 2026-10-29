@@ -72,6 +72,24 @@ public partial class App : Application
         _qpdf = Qpdf.TryCreate(_settings.QpdfPath);
         Log.Write($"Started. ffmpeg = {_ffmpeg?.ExePath ?? "NOT FOUND"}, qpdf = {_qpdf?.ExePath ?? "NOT FOUND"}");
 
+        // Droppo.exe --transcribe-test <folder>: transcribes every .wav/.mp4 in it with the real engine (GitHub build check)
+        int listen = Array.FindIndex(e.Args, a => string.Equals(a, "--transcribe-test", StringComparison.OrdinalIgnoreCase));
+        if (listen >= 0)
+        {
+            var folder = listen + 1 < e.Args.Length ? e.Args[listen + 1] : "transcribe-test";
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try { await SelfTest.TranscribeAsync(folder); }
+                catch (Exception ex)
+                {
+                    Directory.CreateDirectory(folder);
+                    File.WriteAllText(Path.Combine(folder, "crash.txt"), ex.ToString());
+                }
+                finally { Shutdown(); }
+            }));
+            return;
+        }
+
         // Droppo.exe --previews <folder>: draws every window into PNGs and quits (used by the GitHub build to check the look)
         int preview = Array.FindIndex(e.Args, a => string.Equals(a, "--previews", StringComparison.OrdinalIgnoreCase));
         if (preview >= 0)
@@ -181,7 +199,9 @@ public partial class App : Application
     }
 
     /// <summary>Everything an action or Studio needs. Picks up tools installed after launch.</summary>
-    private ActionContext CreateContext()
+    private ActionContext CreateContext() => CreateContext(CancellationToken.None);
+
+    private ActionContext CreateContext(CancellationToken token)
     {
         _ffmpeg ??= FFmpeg.TryCreate(_settings.FfmpegPath);
         _qpdf ??= Qpdf.TryCreate(_settings.QpdfPath);
@@ -193,7 +213,7 @@ public partial class App : Application
         return new ActionContext
         {
             FFmpeg = _ffmpeg, Qpdf = _qpdf, PdfRenderer = _pdfRenderer, OcrEngine = _ocr,
-            Office = _office, Prompts = _prompts, Settings = _settings,
+            Office = _office, Prompts = _prompts, Settings = _settings, Token = token,
         };
     }
 
@@ -215,11 +235,14 @@ public partial class App : Application
         _watcher?.Suppress();
         _tray?.SetBusy(true);
         DispatcherTimer? slow = null;
+        using var stop = new CancellationTokenSource();
+        (double Fraction, string? Text)? latest = null;
         try
         {
-            var ctx = CreateContext();
+            var ctx = CreateContext(stop.Token);
             if (!action.Silent && action.ClipboardText == null)
             {
+                string working = $"{action.Label} \u00B7 {FileKinds.Describe(files)}";
                 // only say "working" when it takes a moment; quick jobs go straight to "All done."
                 ctx.WorkStarted = () => Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -227,13 +250,28 @@ public partial class App : Application
                     slow.Tick += (_, _) =>
                     {
                         slow?.Stop();
-                        ShowToast(ToastKind.Working, "Working on it\u2026", $"{action.Label} \u00B7 {FileKinds.Describe(files)}");
+                        if (stop.IsCancellationRequested) return;
+                        ShowToast(ToastKind.Working, "Working on it\u2026", latest?.Text ?? working,
+                            extra: ("Stop", () => { try { stop.Cancel(); } catch (ObjectDisposedException) { } }));
+                        if (latest is { } l) _toast?.SetProgress(l.Fraction, l.Text);
                     };
                     slow.Start();
+                }));
+                ctx.ProgressChanged = (fraction, text) => Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var line = text == null ? working : files.Count > 1 ? $"{text} ({Math.Min(files.Count, (int)(fraction * files.Count) + 1)} of {files.Count})" : text;
+                    latest = (fraction, line);
+                    if (_toast?.IsWorking == true && !stop.IsCancellationRequested) _toast.SetProgress(fraction, line);
                 }));
             }
             var result = await Task.Run(() => ActionRunner.RunAsync(action, files, ctx));
             slow?.Stop();
+            if (stop.IsCancellationRequested)
+            {
+                ShowToast(ToastKind.Info, "Stopped.", result.Outputs.Count > 0 ? $"{result.Outputs.Count} saved before stopping." : "Nothing was saved.",
+                          reveal: result.Outputs.FirstOrDefault());
+                return;
+            }
             Report(action, files, result);
         }
         catch (Exception ex)

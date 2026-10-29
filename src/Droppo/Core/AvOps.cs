@@ -17,6 +17,7 @@ public static class AvOps
             new() { Id = "vid.mp4", Label = "MP4", Hint = "plays anywhere", PerFile = ToMp4, HideForExtensions = new[] { ".mp4" } },
             new() { Id = "vid.gif", Label = "GIF", Hint = $"first {s.GifMaxSeconds}s", PerFile = ToGif },
             new() { Id = "vid.mp3", Label = "MP3", Hint = "audio only", PerFile = ExtractMp3 },
+            TranscribeOps.Action("vid.transcribe", video: true),
             CompressOps.Action("vid.smaller", CompressOps.Video),
         };
         if (count == 1) list.Add(MediaEditOps.TrimAction("vid.trim"));
@@ -35,6 +36,7 @@ public static class AvOps
     {
         var list = new List<WheelAction>
         {
+            TranscribeOps.Action("aud.transcribe", video: false),
             new() { Id = "aud.mp3", Label = "MP3", Hint = "convert", PerFile = ExtractMp3, HideForExtensions = new[] { ".mp3" } },
             new() { Id = "aud.wav", Label = "WAV", Hint = "convert", PerFile = ToWav, HideForExtensions = new[] { ".wav" } },
             new() { Id = "aud.m4a", Label = "M4A", Hint = "convert", PerFile = ToM4a, HideForExtensions = new[] { ".m4a" } },

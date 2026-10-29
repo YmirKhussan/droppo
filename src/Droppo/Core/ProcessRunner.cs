@@ -38,6 +38,60 @@ public static class ProcessRunner
         return (proc.ExitCode, await outTask.ConfigureAwait(false), await errTask.ConfigureAwait(false));
     }
 
+    /// <summary>
+    /// Runs a long job and hands over each line it prints as it goes (for progress), without judging success.
+    /// Cancelling kills it. Returns the exit code and everything it printed.
+    /// </summary>
+    public static async Task<(int ExitCode, string Output, string Error)> StreamAsync(string exe, IEnumerable<string> args,
+        CancellationToken ct, Action<string>? onLine = null)
+    {
+        var psi = new ProcessStartInfo(exe)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            StandardErrorEncoding = System.Text.Encoding.UTF8,
+            StandardOutputEncoding = System.Text.Encoding.UTF8,
+        };
+        foreach (var a in args) psi.ArgumentList.Add(a);
+
+        var output = new System.Text.StringBuilder();
+        var error = new System.Text.StringBuilder();
+        using var proc = new Process { StartInfo = psi };
+        void Line(System.Text.StringBuilder into, string? line)
+        {
+            if (line == null) return;
+            lock (into) into.AppendLine(line);
+            try { onLine?.Invoke(line); } catch { }
+        }
+        proc.OutputDataReceived += (_, e) => Line(output, e.Data);
+        proc.ErrorDataReceived += (_, e) => Line(error, e.Data);
+        try
+        {
+            if (!proc.Start()) throw new ToolException($"Could not start {Path.GetFileName(exe)}.");
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            throw new ToolException($"Could not start {Path.GetFileName(exe)}: {ex.Message}");
+        }
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+        using (ct.Register(() =>
+        {
+            try { if (!proc.HasExited) proc.Kill(entireProcessTree: true); } catch { }
+        }))
+        {
+            await proc.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            proc.WaitForExit(); // let the last lines arrive
+        }
+        ct.ThrowIfCancellationRequested();
+        string o, e2;
+        lock (output) o = output.ToString();
+        lock (error) e2 = error.ToString();
+        return (proc.ExitCode, o, e2);
+    }
+
     public static async Task<string> RunAsync(string exe, IEnumerable<string> args, CancellationToken ct,
         Func<int, bool>? isSuccess = null, Func<string, string?>? friendly = null)
     {

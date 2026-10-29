@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -27,6 +28,10 @@ internal sealed class SettingsWindow : GlassWindow
     private readonly TextBox _ffmpeg = Box(300);
     private readonly TextBox _qpdf = Box(300);
     private readonly TextBox _libre = Box(300);
+    private readonly TextBox _whisper = Box(300);
+    private readonly TextBlock _whisperStatus = Status();
+    private readonly ComboBox _speech = new() { Width = 200, Height = 30, VerticalContentAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _speechStatus = new() { FontSize = 12, Foreground = Ui.Muted, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) };
     private readonly TextBlock _ffmpegStatus = Status();
     private readonly TextBlock _qpdfStatus = Status();
     private readonly TextBlock _libreStatus = Status();
@@ -93,6 +98,12 @@ internal sealed class SettingsWindow : GlassWindow
         gif.Children.Add(_gifSeconds);
         gif.Children.Add(new TextBlock { Text = "seconds", FontSize = 13, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = Ui.Muted });
         conversions.Children.Add(Row("Video to GIF uses the first", gif));
+        foreach (var m in TranscribeOps.Models) _speech.Items.Add($"{m.Label} ({Math.Round(m.ApproxBytes / 1e6):0} MB)");
+        _speech.SelectedIndex = Math.Max(0, Array.FindIndex(TranscribeOps.Models, m => m.Id == TranscribeOps.ModelFor(settings.TranscribeModel).Id));
+        _speech.SelectionChanged += (_, _) => RefreshSpeech();
+        conversions.Children.Add(Row("Transcribe: speech model", _speech));
+        conversions.Children.Add(_speechStatus);
+        RefreshSpeech();
         Section(panel, "Conversions", conversions);
 
         // ---- look ----
@@ -110,9 +121,10 @@ internal sealed class SettingsWindow : GlassWindow
         tools.Children.Add(Note("Droppo comes with these. Only pick a different copy if you know you need one."));
         tools.Children.Add(ToolRow("FFmpeg (pictures, video, audio)", _ffmpeg, _ffmpegStatus, settings.FfmpegPath, "ffmpeg.exe"));
         tools.Children.Add(ToolRow("qpdf (PDF tools)", _qpdf, _qpdfStatus, settings.QpdfPath, "qpdf.exe"));
+        tools.Children.Add(ToolRow("whisper (Transcribe)", _whisper, _whisperStatus, settings.WhisperPath, "whisper-cli.exe"));
         tools.Children.Add(ToolRow("LibreOffice (Word/Excel/PowerPoint to PDF, if no Microsoft Office)", _libre, _libreStatus, settings.LibreOfficePath, "soffice.exe"));
         RefreshTools();
-        foreach (var box in new[] { _ffmpeg, _qpdf, _libre }) box.LostKeyboardFocus += (_, _) => RefreshTools();
+        foreach (var box in new[] { _ffmpeg, _qpdf, _whisper, _libre }) box.LostKeyboardFocus += (_, _) => RefreshTools();
         Section(panel, "Helper programs", tools);
 
         // ---- signature ----
@@ -171,7 +183,16 @@ internal sealed class SettingsWindow : GlassWindow
     {
         SetToolStatus(_ffmpegStatus, FFmpeg.TryCreate(Clean(_ffmpeg.Text))?.ExePath, "Not found. Reinstalling Droppo puts it back.");
         SetToolStatus(_qpdfStatus, Qpdf.TryCreate(Clean(_qpdf.Text))?.ExePath, "Not found. Reinstalling Droppo puts it back.");
+        SetToolStatus(_whisperStatus, TranscribeOps.LocateWhisper(Clean(_whisper.Text)), "Not found. Reinstalling Droppo puts it back.");
         SetToolStatus(_libreStatus, LibreOfficeConverter.TryCreate(Clean(_libre.Text))?.ExePath, "Not installed. Only needed without Microsoft Office: free from libreoffice.org.");
+    }
+
+    private void RefreshSpeech()
+    {
+        var model = TranscribeOps.Models[Math.Clamp(_speech.SelectedIndex, 0, TranscribeOps.Models.Length - 1)];
+        _speechStatus.Text = (TranscribeOps.FindModel(model) != null
+            ? "Downloaded and ready. "
+            : "Downloads once, the first time you transcribe. ") + model.Detail.Split(". ", 2).Last();
     }
 
     private static void SetToolStatus(TextBlock status, string? found, string missing)
@@ -223,6 +244,8 @@ internal sealed class SettingsWindow : GlassWindow
         _settings.FfmpegPath = Clean(_ffmpeg.Text);
         _settings.QpdfPath = Clean(_qpdf.Text);
         _settings.LibreOfficePath = Clean(_libre.Text);
+        _settings.WhisperPath = Clean(_whisper.Text);
+        _settings.TranscribeModel = TranscribeOps.Models[Math.Clamp(_speech.SelectedIndex, 0, TranscribeOps.Models.Length - 1)].Id;
         _settings.GlassEffects = _glass.IsChecked == true;
         _settings.Animations = _motion.IsChecked == true;
         _settings.Save();

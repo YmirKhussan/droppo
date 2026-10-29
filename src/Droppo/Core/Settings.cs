@@ -44,6 +44,12 @@ public sealed class Settings
     /// <summary>Short animations (wheel opening, hover, notifications).</summary>
     public bool Animations { get; set; } = true;
 
+    /// <summary>Speech model for Transcribe: "base" (quick, ~148 MB) or "small" (more accurate, ~488 MB). Empty = not chosen yet.</summary>
+    public string TranscribeModel { get; set; } = "";
+
+    /// <summary>Optional full path to whisper-cli.exe. Leave empty to use the one Droppo ships with.</summary>
+    public string? WhisperPath { get; set; }
+
     /// <summary>The "how to use it" window has been shown once.</summary>
     public bool WelcomeShown { get; set; }
 

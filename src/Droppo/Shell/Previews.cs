@@ -76,6 +76,11 @@ internal static class Previews
         toast.Show(ToastKind.Working, "Working on it…", "Smaller · 1 video");
         await Delay(700);
         Snap(toast, "toast working");
+        toast.Show(ToastKind.Working, "Working on it…", "Transcribe · 1 video", extra: ("Stop", () => { }));
+        await Delay(300);
+        toast.SetProgress(0.42, "Transcribing… 42%");
+        await Delay(500);
+        Snap(toast, "toast progress");
         var made = Path.Combine(_out, "holiday-1080x1080.jpg");
         File.WriteAllText(made, "x");
         toast.Show(ToastKind.Done, "All done!", "Your file is ready: holiday-1080x1080.jpg", reveal: made, open: made);
@@ -89,6 +94,9 @@ internal static class Previews
         toast.Dismiss();
 
         // ---- dialogs (each closes itself after its picture) ----
+        Dialogs.AskChoice(new ChoiceRequest("Transcribe", "Transcribe needs a speech model",
+            "It's a one-time download. After that everything runs on this PC, and nothing you transcribe is uploaded.",
+            TranscribeOps.Models.Select(m => new Choice(m.Id, m.Label, m.Detail)).ToList(), "base", "Download"), null);
         Dialogs.AskTargetSize(290_440_000, 1, new SizeTarget(10, false), null);
         Dialogs.AskTargetSize(45_000_000, 3, new SizeTarget(50, true), null);
         Dialogs.AskPassword("Password needed", "\"report.pdf\" is password-protected. Enter its password:", false, null);

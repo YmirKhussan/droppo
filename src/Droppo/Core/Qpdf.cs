@@ -203,4 +203,13 @@ public interface IUserPrompts
 
     /// <summary>Folder to save results in (when Settings say "ask every time"). Null if cancelled.</summary>
     Task<string?> AskFolderAsync(string title);
+
+    /// <summary>Pick one of a few options (big tappable rows). Returns the chosen Id, or null if cancelled.</summary>
+    Task<string?> AskChoiceAsync(ChoiceRequest request);
 }
+
+/// <summary>One option in <see cref="IUserPrompts.AskChoiceAsync"/>.</summary>
+public sealed record Choice(string Id, string Label, string Detail);
+
+/// <summary>A small "pick one" question: heading, a line of explanation, the options and the button text.</summary>
+public sealed record ChoiceRequest(string Title, string Heading, string Message, IReadOnlyList<Choice> Choices, string Selected, string Confirm);
