@@ -14,7 +14,7 @@
     <AssemblyName>Droppo</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <Version>0.9.0</Version>
+    <Version>0.10.0</Version>
     <Company>Droppo</Company>
     <Description>Droppo. Drop it. Done.</Description>
     <Product>Droppo</Product>
