@@ -1,0 +1,27 @@
+Glass enabled: True
+Theme parts loaded: 8 of 8
+Wheel glass picture: yes
+01-wheel: WheelWindow 380x380
+02-wheel-test: WheelWindow 380x380
+03-toast-working: Toast 400x133
+04-toast-progress: Toast 400x175
+05-toast-done: Toast 400x175
+06-toast-error: Toast 400x175
+07-transcribe: GlassWindow 492x384
+08-make-it-smaller: GlassWindow 492x392
+09-make-it-smaller: GlassWindow 492x392
+10-password-needed: GlassWindow 424x233
+11-protect-with-a-password: GlassWindow 424x308
+12-resize: GlassWindow 504x536
+13-rename-4-items: GlassWindow 564x438
+14-join-clips: GlassWindow 524x379
+15-trim-clip-mp4: GlassWindow 644x512
+16-your-signature: GlassWindow 606x390
+17-page-numbers: GlassWindow 404x381
+18-watermark: GlassWindow 404x362
+19-home: HomeWindow 1040x680
+20-home-with-a-photo: HomeWindow 1040x680
+21-welcome-to-droppo: GlassWindow 560x491
+22-droppo-settings: SettingsWindow 600x788
+23-pdf-studio---droppo: StudioWindow 1044x780
+Pictures: 23

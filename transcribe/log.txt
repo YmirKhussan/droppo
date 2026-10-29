@@ -1,0 +1,4 @@
+[2026-10-29 04:42:24] Started. ffmpeg = NOT FOUND, qpdf = NOT FOUND
+[2026-10-29 04:42:55] Started. ffmpeg = D:\a\droppo\droppo\build\tools\ffmpeg\ffmpeg.exe, qpdf = NOT FOUND
+[2026-10-29 04:42:55] Downloading speech model https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+[2026-10-29 04:42:56] Speech model saved: C:\Users\runneradmin\AppData\Local\Droppo\models\ggml-base.bin (141.1 MB)

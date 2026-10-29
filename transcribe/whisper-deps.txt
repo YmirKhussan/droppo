@@ -1,0 +1,482 @@
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-base.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    KERNEL32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-utility-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-time-l1-1-0.dll
+
+  Summary
+
+        1000 .data
+        6000 .pdata
+       23000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       7A000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-alderlake.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       9C000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-cannonlake.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       A7000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-cascadelake.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       A7000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-haswell.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       9C000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-icelake.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       A7000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-sandybridge.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       24000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       9B000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-skylakex.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       23000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       A7000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-sse42.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       23000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       98000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml-cpu-x64.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    ADVAPI32.dll
+    VCOMP140.DLL
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+       86000 .data
+        6000 .pdata
+       23000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       99000 .text
+        1000 _RDATA
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\ggml.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml-base.dll
+    KERNEL32.dll
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-locale-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+
+  Summary
+
+        1000 .data
+        1000 .pdata
+        6000 .rdata
+        1000 .reloc
+        1000 .rsrc
+        A000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\msvcp140.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-locale-l1-1-0.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-filesystem-l1-1-0.dll
+    api-ms-win-crt-time-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-utility-l1-1-0.dll
+    KERNEL32.dll
+
+  Summary
+
+        4000 .data
+        5000 .pdata
+       2F000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       62000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\vcomp140.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    KERNEL32.dll
+
+  Summary
+
+        3000 .data
+        1000 .fptable
+        2000 .pdata
+        E000 .rdata
+        1000 .reloc
+        2000 .rsrc
+       1D000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\vcruntime140_1.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    VCRUNTIME140.dll
+    KERNEL32.dll
+
+  Summary
+
+        1000 .data
+        1000 .pdata
+        3000 .rdata
+        1000 .reloc
+        1000 .rsrc
+        4000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\vcruntime140.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    KERNEL32.dll
+
+  Summary
+
+        1000 .data
+        2000 .pdata
+        6000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       1E000 .text
+        1000 _RDATA
+        1000 fothk
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\whisper-cli.exe
+
+File Type: EXECUTABLE IMAGE
+
+  Image has the following dependencies:
+
+    whisper.dll
+    ggml.dll
+    KERNEL32.dll
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-filesystem-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-utility-l1-1-0.dll
+    api-ms-win-crt-locale-l1-1-0.dll
+
+  Summary
+
+        3000 .data
+        4000 .pdata
+       12000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       5F000 .text
+
+Dump of file D:\a\droppo\droppo\build\tools\whisper-cli\whisper.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ggml.dll
+    ggml-base.dll
+    MSVCP140.dll
+    VCRUNTIME140.dll
+    VCRUNTIME140_1.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-filesystem-l1-1-0.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-utility-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-locale-l1-1-0.dll
+    KERNEL32.dll
+
+  Summary
+
+        3000 .data
+        6000 .pdata
+       E7000 .rdata
+        1000 .reloc
+        1000 .rsrc
+       61000 .text

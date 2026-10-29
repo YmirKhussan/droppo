@@ -1,0 +1,49 @@
+ffmpeg:  D:\a\droppo\droppo\build\tools\ffmpeg\ffmpeg.exe
+whisper: D:\a\droppo\droppo\build\tools\whisper-cli\whisper-cli.exe
+threads: 4 logical
+  download 0%: Getting the speech model (one time): 0 of 147 MB
+  download 72%: Getting the speech model (one time): 106 of 147 MB
+model:   C:\Users\runneradmin\AppData\Local\Droppo\models\ggml-base.bin
+         147951465 bytes (expected about 147951465), sha1 465707469ff3a37a2b9b8d8f89f2f99de7299dac, looks like a model: True
+         took 1.2 s
+inputs:  4
+
+== café notes.wav
+took 2.3 s, ok True, cancelled False
+note: English · 8 s
+progress updates: 3: 0.00 Getting the sound ready… ; 1.00 Transcribing… 100% ; 1.00 Transcribing… 100%
+output: café notes-transcript.txt
+The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer.
+
+== speech-video.mp4
+took 2.1 s, ok True, cancelled False
+note: English · 8 s | Subtitles too: speech-video.srt
+progress updates: 3: 0.00 Getting the sound ready… ; 1.00 Transcribing… 100% ; 1.00 Transcribing… 100%
+output: speech-video-transcript.txt
+The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer.
+srt: speech-video.srt
+1
+00:00:00,000 --> 00:00:02,960
+The quick brown fox jumps over the lazy dog.
+
+2
+00:00:03,440 --> 00:00:07,360
+Drop-o-turn speech into text, right on your own computer.
+
+== speech.wav
+took 2.1 s, ok True, cancelled False
+note: English · 8 s
+progress updates: 3: 0.00 Getting the sound ready… ; 1.00 Transcribing… 100% ; 1.00 Transcribing… 100%
+output: speech-transcript.txt
+The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer.
+
+== zz-long.wav
+took 7.4 s, ok True, cancelled False
+note: English · 1 min 19 s
+progress updates: 5: 0.00 Getting the sound ready… ; 0.36 Transcribing… 34% ; 0.70 Transcribing… 69% ; 1.00 Transcribing… 100% ; 1.00 Transcribing… 100%
+output: zz-long-transcript.txt
+The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer.
+
+The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer. The quick brown fox jumps over the lazy dog. Drop-o-turn speech into text, right on your own computer.
+
+done
