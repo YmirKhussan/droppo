@@ -172,11 +172,16 @@ if ($Fresh -and (Test-Path $wZip)) { Remove-Item $wZip -Force }
 if (-not (Test-Path $wZip)) {
     $headers = @{ 'User-Agent' = 'Droppo-build' }
     if ($env:GH_TOKEN) { $headers['Authorization'] = "Bearer $env:GH_TOKEN" }
-    $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest' -Headers $headers
-    Write-Host "whisper.cpp $($release.tag_name): $(($release.assets | ForEach-Object { $_.name }) -join ', ')"
-    $asset = $release.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
-    if (-not $asset) { $asset = $release.assets | Where-Object { $_.name -like '*bin-x64*.zip' -and $_.name -notmatch 'blas|cuda|cublas|vulkan' } | Select-Object -First 1 }
-    if (-not $asset) { Fail "No plain Windows x64 zip in whisper.cpp $($release.tag_name)." }
+    # the newest release that has the plain Windows build attached (some releases ship without binaries)
+    $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases?per_page=15' -Headers $headers
+    $release = $null; $asset = $null
+    foreach ($r in $releases) {
+        if ($r.prerelease -or $r.draft) { continue }
+        $a = $r.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+        if ($a) { $release = $r; $asset = $a; break }
+    }
+    if (-not $asset) { Fail 'No recent whisper.cpp release has whisper-bin-x64.zip attached.' }
+    Write-Host "whisper.cpp $($release.tag_name): $($asset.name) ($([math]::Round($asset.size / 1MB, 1)) MB)"
     Download $asset.browser_download_url $wZip
     $release.tag_name | Out-File (Join-Path $downloads 'whisper-version.txt') -Encoding ascii
 }
