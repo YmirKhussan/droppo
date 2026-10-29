@@ -172,15 +172,21 @@ if ($Fresh -and (Test-Path $wZip)) { Remove-Item $wZip -Force }
 if (-not (Test-Path $wZip)) {
     $headers = @{ 'User-Agent' = 'Droppo-build' }
     if ($env:GH_TOKEN) { $headers['Authorization'] = "Bearer $env:GH_TOKEN" }
-    # the newest release that has the plain Windows build attached (some releases ship without binaries)
-    $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases?per_page=15' -Headers $headers
+    # the whisper.cpp build Droppo was tested with (installer\whisper-version.txt); newest one with a Windows zip if it's gone
+    $pinned = (Get-Content (Join-Path $PSScriptRoot 'whisper-version.txt') -Raw).Trim()
     $release = $null; $asset = $null
-    foreach ($r in $releases) {
-        if ($r.prerelease -or $r.draft) { continue }
-        $a = $r.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
-        if ($a) { $release = $r; $asset = $a; break }
+    try {
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/ggml-org/whisper.cpp/releases/tags/$pinned" -Headers $headers
+        $asset = $release.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+    } catch { Write-Host "whisper.cpp $pinned not found, looking for the newest build." -ForegroundColor Yellow }
+    if (-not $asset) {
+        $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases?per_page=15' -Headers $headers
+        foreach ($r in $releases) {
+            $a = $r.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+            if ($a) { $release = $r; $asset = $a; break }
+        }
     }
-    if (-not $asset) { Fail 'No recent whisper.cpp release has whisper-bin-x64.zip attached.' }
+    if (-not $asset) { Fail 'No whisper.cpp release has whisper-bin-x64.zip attached.' }
     Write-Host "whisper.cpp $($release.tag_name): $($asset.name) ($([math]::Round($asset.size / 1MB, 1)) MB)"
     Download $asset.browser_download_url $wZip
     $release.tag_name | Out-File (Join-Path $downloads 'whisper-version.txt') -Encoding ascii
@@ -190,8 +196,8 @@ if (Test-Path $wTmp) { Remove-Item $wTmp -Recurse -Force }
 Expand-Archive $wZip -DestinationPath $wTmp -Force
 $cli = Get-ChildItem $wTmp -Recurse -Filter 'whisper-cli.exe' | Select-Object -First 1
 if (-not $cli) { Fail 'whisper-cli.exe not found inside the whisper.cpp download.' }
-# whisper-cli.exe plus the DLLs next to it (ggml, whisper, the CPU back ends)
-Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -eq 'whisper-cli.exe' -or $_.Extension -eq '.dll' } |
+# whisper-cli.exe, whisper.dll and ggml (with one CPU back end per processor generation, picked at run time)
+Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -in 'whisper-cli.exe', 'whisper.dll' -or $_.Name -like 'ggml*.dll' } |
     Copy-Item -Destination $wDir
 $wLic = Get-ChildItem $wTmp -Recurse -File | Where-Object { $_.Name -match '^LICENSE' } | Select-Object -First 1
 if ($wLic) { Copy-Item $wLic.FullName (Join-Path $licenses 'whisper.cpp-LICENSE.txt') }

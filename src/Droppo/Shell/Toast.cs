@@ -171,7 +171,7 @@ internal sealed class Toast : Window
         bool canOpen = open != null && File.Exists(open);
         if (canOpen) _buttons.Children.Add(PillButton("Open file", () => { OpenFile(open!); Dismiss(); }, primary: true));
         if (reveal != null) _buttons.Children.Add(PillButton("Show in folder", () => { Tray.Reveal(reveal); Dismiss(); }, primary: !canOpen));
-        if (extra is { } x) _buttons.Children.Add(PillButton(x.Label, x.Run, primary: _buttons.Children.Count == 0));
+        if (extra is { } x) _buttons.Children.Add(PillButton(x.Label, x.Run, primary: _buttons.Children.Count == 0 && kind != ToastKind.Working));
         _buttons.Visibility = _buttons.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         bool working = kind == ToastKind.Working;

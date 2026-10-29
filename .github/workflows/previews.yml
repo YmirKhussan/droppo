@@ -8,6 +8,7 @@ on:
     paths:
       - "src/**"
       - ".github/workflows/previews.yml"
+      - "installer/whisper-version.txt"
   workflow_dispatch:
 
 permissions:
@@ -52,20 +53,16 @@ jobs:
           Invoke-WebRequest https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip -OutFile ff.zip -UseBasicParsing
           Expand-Archive ff.zip -DestinationPath ffx -Force
           Copy-Item (Get-ChildItem ffx -Recurse -Filter ffmpeg.exe | Select-Object -First 1).FullName build/tools/ffmpeg/
-          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/ggml-org/whisper.cpp/releases?per_page=15" -Headers @{ Authorization = "Bearer $env:GH_TOKEN" }
-          $release = $null; $asset = $null
-          foreach ($r in $releases) {
-            "$($r.tag_name): $(($r.assets | ForEach-Object { $_.name }) -join ', ')" | Add-Content previews/transcribe/whisper-release.txt
-            if ($asset -or $r.prerelease -or $r.draft) { continue }
-            $a = $r.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
-            if ($a) { $release = $r; $asset = $a }
-          }
-          "using $($release.tag_name)" | Add-Content previews/transcribe/whisper-release.txt
+          $pinned = (Get-Content installer/whisper-version.txt -Raw).Trim()
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/ggml-org/whisper.cpp/releases/tags/$pinned" -Headers @{ Authorization = "Bearer $env:GH_TOKEN" }
+          $asset = $release.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+          "using $($release.tag_name) $($asset.name)" | Out-File previews/transcribe/whisper-release.txt
           Invoke-WebRequest $asset.browser_download_url -OutFile w.zip -UseBasicParsing
           Expand-Archive w.zip -DestinationPath wx -Force
           $cli = Get-ChildItem wx -Recurse -Filter whisper-cli.exe | Select-Object -First 1
           (Get-ChildItem $cli.DirectoryName | ForEach-Object { "$($_.Name) $($_.Length)" }) -join "`n" | Out-File previews/transcribe/whisper-files.txt
-          Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -eq 'whisper-cli.exe' -or $_.Extension -eq '.dll' } | Copy-Item -Destination build/tools/whisper-cli
+          Get-ChildItem $cli.DirectoryName -File | Where-Object { $_.Name -in 'whisper-cli.exe', 'whisper.dll' -or $_.Name -like 'ggml*.dll' } | Copy-Item -Destination build/tools/whisper-cli
+          foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcomp140.dll') { if (Test-Path "$env:WINDIR\System32\$dll") { Copy-Item "$env:WINDIR\System32\$dll" build/tools/whisper-cli } }
           & build/tools/whisper-cli/whisper-cli.exe --help *> previews/transcribe/whisper-help.txt
           "exit $LASTEXITCODE" | Add-Content previews/transcribe/whisper-help.txt
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -85,6 +82,7 @@ jobs:
           $s.Speak("The quick brown fox jumps over the lazy dog. Droppo turns speech into text, right on your own computer.")
           $s.Dispose()
           Copy-Item previews/transcribe/speech.wav "previews/transcribe/caf$([char]0xE9) notes.wav"
+          & build/tools/ffmpeg/ffmpeg.exe -hide_banner -loglevel error -y -stream_loop 9 -i previews/transcribe/speech.wav -c copy previews/transcribe/zz-long.wav
           & build/tools/ffmpeg/ffmpeg.exe -hide_banner -loglevel error -y -f lavfi -i color=c=0x3882F6:s=640x360:r=25 -i previews/transcribe/speech.wav -shortest -c:v libx264 -pix_fmt yuv420p -c:a aac previews/transcribe/speech-video.mp4
 
       - name: Transcribe them with Droppo
